@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "llmfin"
+version = "0.2.0"
+description = "MCP-based trading intelligence layer for Indian markets (NSE) — scanner, signals, research, journal, and risk-gated execution via Zerodha Kite Connect"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+dependencies = [
+    "mcp>=1.2.0",
+    "kiteconnect>=5.0.0",
+    "pandas>=2.2.0",
+    "numpy>=1.26.0",
+    "requests>=2.31.0",
+    "python-dotenv>=1.0.0",
+    "rich>=13.0.0",
+    "anyio>=4.0.0",
+]
+
+[project.scripts]
+llmfin-server = "llmfin.server:main"
+llmfin-research = "llmfin.batch_runner:main"
+llmfin-scan = "llmfin.scanner:main"
+llmfin-ingest = "llmfin.data_store:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

@@ -23,7 +23,7 @@ import json
 import logging
 import os
 import time
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Optional
 
@@ -46,6 +46,16 @@ API_SECRET: str = os.getenv("KITE_API_SECRET", "")
 # Helpers
 # ---------------------------------------------------------------------------
 
+# Kite access tokens expire on the IST trading-day boundary, not UTC —
+# compare dates in IST or a token minted after 6:30 PM ET looks "fresh" the
+# next morning when it is actually dead.
+IST = timezone(timedelta(hours=5, minutes=30))
+
+
+def _ist_today() -> str:
+    return datetime.now(tz=IST).strftime("%Y-%m-%d")
+
+
 def _load_token() -> Optional[dict]:
     """Load persisted session token from disk (returns None if absent/stale)."""
     if not TOKEN_FILE.exists():
@@ -53,7 +63,7 @@ def _load_token() -> Optional[dict]:
     try:
         data = json.loads(TOKEN_FILE.read_text())
         saved_date = data.get("date")
-        today = datetime.now(tz=timezone.utc).strftime("%Y-%m-%d")
+        today = _ist_today()
         if saved_date != today:
             logger.info("Cached token is from %s — expired (today is %s).", saved_date, today)
             return None
@@ -64,9 +74,8 @@ def _load_token() -> Optional[dict]:
 
 
 def _save_token(access_token: str) -> None:
-    """Persist the access token to disk tagged with today's date."""
-    today = datetime.now(tz=timezone.utc).strftime("%Y-%m-%d")
-    TOKEN_FILE.write_text(json.dumps({"access_token": access_token, "date": today}, indent=2))
+    """Persist the access token to disk tagged with today's IST date."""
+    TOKEN_FILE.write_text(json.dumps({"access_token": access_token, "date": _ist_today()}, indent=2))
     logger.info("Access token saved to %s.", TOKEN_FILE)
 
 
@@ -130,3 +139,13 @@ def get_kite_client() -> KiteConnect:
         "2. After redirect, copy the `request_token` from the URL.\n"
         "3. Run: python -m llmfin.auth --request-token <TOKEN>"
     )
+
+
+def get_kite_client_or_none() -> Optional[KiteConnect]:
+    """Like get_kite_client(), but returns None instead of raising when no
+    credentials/session exist — used by tools that can fall back to the free
+    local bhavcopy DB."""
+    try:
+        return get_kite_client()
+    except (RuntimeError, EnvironmentError):
+        return None

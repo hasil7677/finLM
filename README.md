@@ -1,204 +1,170 @@
-# llmfin — MCP Trading Intelligence Layer
+# llmfin — MCP Trading Intelligence Layer for NSE
 
-> **An MCP-based intelligence layer for LLMs that performs hedge-fund-style market research as a batch job using the Zerodha Kite Connect SDK and suggests trades.**
+> An MCP server that gives LLMs a real trading intelligence layer for Indian markets:
+> deterministic market scanning, regime-separated signals, news research, a decision
+> journal that scores itself, and risk-gated execution via Zerodha Kite Connect.
 
----
+The design principle: **the LLM never predicts prices and never bypasses risk math.**
+Deterministic code finds *what* is moving and enforces *what you're allowed to do*;
+the LLM's job is the part it's actually good at — explaining *why* something is
+moving, weighing evidence, and writing the trade plan.
 
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────┐
-│                    LLM Client                        │
-│          (Claude / GPT-4 / Gemini via MCP)          │
-└──────────────────────┬──────────────────────────────┘
-                       │  MCP Protocol (stdio)
-┌──────────────────────▼──────────────────────────────┐
-│               llmfin MCP Server                      │
-│  ┌──────────────────────────────────────────────┐   │
-│  │  Tools:                                       │   │
-│  │  • research_instrument  (full TA analysis)    │   │
-│  │  • get_batch_research   (watchlist screening) │   │
-│  │  • get_market_quote     (live LTP)            │   │
-│  │  • search_instruments   (find tokens)         │   │
-│  │  • get_portfolio_positions                    │   │
-│  │  • place_order          (with safety guard)   │   │
-│  └──────────────────────────────────────────────┘   │
-└──────────────────────┬──────────────────────────────┘
-                       │
-┌──────────────────────▼──────────────────────────────┐
-│           market_research.py (core engine)           │
-│   OHLCV fetch → RSI/MACD/BB/EMA/ATR → Signal gen   │
-└──────────────────────┬──────────────────────────────┘
-                       │
-┌──────────────────────▼──────────────────────────────┐
-│         session_manager.py (auth + caching)          │
-│   OAuth flow → token persistence (~/.llmfin_session) │
-└──────────────────────┬──────────────────────────────┘
-                       │
-┌──────────────────────▼──────────────────────────────┐
-│           Zerodha Kite Connect API                   │
-│   Historical Data • Quotes • Orders • Positions      │
-└─────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────┐
+│               LLM Client (Claude / Cursor / …)           │
+└────────────────────────┬─────────────────────────────────┘
+                         │ MCP (stdio)
+┌────────────────────────▼─────────────────────────────────┐
+│                  llmfin MCP server — 13 tools            │
+│                                                          │
+│  DISCOVERY   scan_market · ingest_market_data            │
+│  ANALYSIS    research_instrument · get_batch_research    │
+│              research_symbol (news, via Tavily)          │
+│  JOURNAL     log_decision · eod_review · get_journal     │
+│  BROKER      get_market_quote · search_instruments       │
+│              get_portfolio_positions · place_order       │
+│              get_risk_status                             │
+└──────┬──────────────────┬──────────────────┬─────────────┘
+       │                  │                  │
+┌──────▼───────┐  ┌───────▼────────┐  ┌──────▼───────────┐
+│ NSE bhavcopy │  │ Risk gate      │  │ Zerodha Kite     │
+│ → SQLite     │  │ risk_limits.   │  │ Connect API      │
+│ (free EOD    │  │ json + KILL_   │  │ (optional: live  │
+│  data spine) │  │ SWITCH file    │  │  data + orders)  │
+└──────────────┘  └────────────────┘  └──────────────────┘
 ```
 
-## Research Engine — How It Works
+**Three tiers of capability, by what you've configured:**
 
-The research pipeline is inspired by quantitative hedge fund strategies:
+| Configured | You get |
+|---|---|
+| Nothing at all | Market scanner, technical research, signals, journal — on free NSE EOD data |
+| + `TAVILY_API_KEY` (free) | News/catalyst research: *why* is it moving |
+| + Kite Connect API keys | Live quotes, intraday candles, positions, risk-gated orders |
 
-| Indicator | Signal Logic | Contribution |
-|-----------|-------------|-------------|
-| **RSI-14** | < 35 → BUY; > 65 → SELL | ±1 |
-| **MACD Histogram** | Positive → BUY; Negative → SELL | ±1 |
-| **Bollinger Bands** | Close in bottom 25% → BUY; top 25% → SELL | ±1 |
-| **EMA-50 Trend** | Close above → BUY; below → SELL | ±1 |
+## The intelligence layer, piece by piece
 
-Score ≥ 2 → **BUY** | Score ≤ -2 → **SELL** | Otherwise → **HOLD**
+**Scanner (deterministic).** `scan_market` cuts the ~2000-stock NSE universe to the
+few names that are liquid *and* unusually active: price/volume/turnover floors,
+then gap %, change %, and volume vs the 20-day average. No LLM involved — pandas
+math over the local DB.
 
-**Confidence** = |score| / 4 (0–100%)
+**Signals (regime-separated).** `research_instrument` runs two independent alpha
+models — trend-following and mean-reversion — each returning conviction (-1..+1)
+and written reasoning, plus ATR-based entry/stop/target plans. They are
+deliberately **not averaged**: a strong uptrend is a BUY to one and an overbought
+SELL to the other, and collapsing that disagreement into one number is how the
+old version of this repo ended up structurally HOLD-ing every trending stock.
+The mean-reversion model has a falling-knife veto: it refuses to buy oversold
+names trading >10% below their EMA50.
 
-**Risk levels** use ATR-14:
-- Stop-loss: 1.5 × ATR from entry
-- Target: 2.5 × ATR from entry (R:R ≈ 1.67)
+**News layer.** `research_symbol` answers "why is this stock moving today" via
+Tavily search — earnings, order wins, corporate actions. A 4% gap on a real
+catalyst is a different trade than a 4% gap on nothing; this is the one step
+where the LLM adds value the math can't.
 
-## Inspiration — Open Source Research
+**Journal (the feedback loop).** `log_decision` records every pick *with its
+thesis verbatim*; `eod_review` later scores each one against real market data —
+stop hit, target hit, still open — and keeps all-time hit-rate stats. After a few
+weeks you have hard numbers on whether the picks beat a coin flip.
 
-This system draws from these hedge-fund-inspired open source repositories:
+**Risk gate (enforced, not prompted).** `place_order` validates every order
+server-side against `risk_limits.json` — order-value cap, quantity cap, daily
+order count, product/symbol allowlists — plus a filesystem `KILL_SWITCH`. No
+mandate file ⇒ orders are blocked. There is **no parameter the LLM can pass to
+bypass this** (the old `confirmed=true` flag was theater — the model just set it
+itself).
 
-| Repo | What it does |
-|------|-------------|
-| [QuantConnect/Lean](https://github.com/QuantConnect/Lean) | Full backtesting + live trading engine (C#/Python) |
-| [quantopian/zipline](https://github.com/quantopian/zipline) | Pythonic algorithmic trading library |
-| [kernc/backtesting.py](https://github.com/kernc/backtesting.py) | Lightweight Python backtesting |
-| [blankly-finance/blankly](https://github.com/blankly-finance/blankly) | Multi-exchange trading framework |
-| [twopirllc/pandas-ta](https://github.com/twopirllc/pandas-ta) | 130+ technical indicators (used here) |
-| [zerodha/kiteconnect-py](https://github.com/zerodha/kiteconnect-py) | Official Kite Connect Python SDK |
-
-## Installation
-
-### Prerequisites
-- Python 3.10+
-- A Zerodha Kite Connect API subscription (get from [developers.kite.trade](https://developers.kite.trade))
-
-### Setup
+## Setup
 
 ```bash
-cd C:\Users\SahilTamang\downloads\llmfin
-
-# Create virtual environment
+git clone https://github.com/hasil7677/finLLM && cd finLLM
 python -m venv .venv
-.venv\Scripts\activate      # Windows
-# source .venv/bin/activate  # macOS/Linux
-
-# Install in editable mode
+.venv\Scripts\activate          # Windows   (source .venv/bin/activate on mac/linux)
 pip install -e .
 
-# Copy and fill in credentials
-copy .env.example .env
-# Edit .env with your KITE_API_KEY and KITE_API_SECRET
+copy .env.example .env           # then fill in whichever keys you have (all optional)
+
+# Bootstrap the free data spine (~1 min, no accounts needed)
+llmfin-ingest --days 150
 ```
 
-## Authentication (One-Time Per Trading Day)
-
-Zerodha tokens expire at midnight IST. Each morning:
+### Try it standalone
 
 ```bash
-# Step 1 — Get your login URL
-python -m llmfin.auth
-
-# Step 2 — Open the URL, log in, copy the request_token from the redirect
-python -m llmfin.auth --request-token xxxxxxxxxxxxxxxxxxxxxxxx
+llmfin-scan --limit 10           # today's movers, as JSON
+llmfin-research                  # scan + research + rich terminal report
 ```
 
-The access token is cached at `~/.llmfin_session.json` and reused automatically all day.
+### Wire into Claude Desktop
 
-## Usage
+Merge [claude_desktop_config.json](./claude_desktop_config.json) into
+`%APPDATA%\Claude\claude_desktop_config.json` (adjust paths), restart Claude,
+then try:
 
-### 1. Batch Research Runner (standalone)
+- *"Ingest the latest market data, scan for today's movers, research the top 5,
+  and build me a ranked watchlist with trade plans."*
+- *"Why is RELAXO up 20%? Search the news, then log a decision with your thesis."*
+- *"Run the EOD review — what's my hit rate so far?"*
 
-```bash
-# Research the default 10-stock Nifty 50 watchlist
-llmfin-research
+### Enable live trading (deliberately manual)
 
-# Custom watchlist
-LLMFIN_WATCHLIST=watchlist.json llmfin-research
+1. Get Kite Connect keys at [developers.kite.trade](https://developers.kite.trade), put them in `.env`.
+2. Each trading day: `python -m llmfin.auth` → log in → `python -m llmfin.auth --request-token <TOKEN>`.
+3. Copy `risk_limits.example.json` → `risk_limits.json` and set **your** caps.
+   This file is your mandate; the LLM can't create or edit it. Create a file named
+   `KILL_SWITCH` (repo root or `~/.llmfin/`) to freeze all trading instantly.
 
-# Save reports to a directory
-LLMFIN_REPORT_DIR=./reports llmfin-research
-```
+## Daily rhythm
 
-Example output:
-```
-┌─────────────────────────────────────────────────┐
-│ Symbol   │ Signal │ Conf │ Close    │ Stop-Loss  │
-├──────────┼────────┼──────┼──────────┼────────────┤
-│ INFY     │  BUY   │  75% │ ₹1,432   │ ₹1,385     │
-│ RELIANCE │  HOLD  │  25% │ ₹2,891   │    —        │
-│ TCS      │  SELL  │  50% │ ₹3,740   │ ₹3,812     │
-└─────────────────────────────────────────────────┘
-```
+| When (IST) | What | How |
+|---|---|---|
+| Evening (after ~6 PM) | Refresh EOD data | `llmfin-ingest` (or ask the LLM: "ingest market data") |
+| Evening | Score today's picks | `eod_review` tool |
+| Morning | Build the watchlist | `scan_market` → `research_symbol` on survivors → `get_batch_research` → `log_decision` per pick |
 
-### 2. MCP Server (for LLM clients)
+Automate the evening steps with Windows Task Scheduler or cron if you like.
 
-```bash
-llmfin-server
-```
-
-Then connect via any MCP client.
-
-### 3. Claude Desktop Integration
-
-Copy [claude_desktop_config.json](./claude_desktop_config.json) content into:
-`%APPDATA%\Claude\claude_desktop_config.json`
-
-Then ask Claude:
-- *"Research INFY and tell me if I should buy it today."*
-- *"Screen my watchlist and find the top 3 BUY signals."*
-- *"What's the live price of TCS and HDFCBANK?"*
-- *"Place a limit buy order for 10 shares of RELIANCE at ₹2,850."*
-
-## MCP Tools Reference
-
-| Tool | Description |
-|------|-------------|
-| `research_instrument` | Full TA + signal for one stock |
-| `get_batch_research` | Screen a list of stocks in one call |
-| `get_market_quote` | Live LTP / OHLC / volume |
-| `search_instruments` | Find instrument_token by ticker name |
-| `get_portfolio_positions` | Current positions |
-| `place_order` | Place order (requires `confirmed=true`) |
-
-## Project Structure
+## Project structure
 
 ```
-llmfin/
+finLLM/
 ├── src/llmfin/
-│   ├── __init__.py
-│   ├── server.py           ← MCP server (6 tools)
-│   ├── market_research.py  ← OHLCV + indicators + signals
-│   ├── batch_runner.py     ← Standalone batch job
-│   ├── session_manager.py  ← Auth + token persistence
-│   └── auth.py             ← OAuth CLI helper
-├── watchlist.json          ← Default 15-stock watchlist
-├── .env.example            ← Config template
-├── claude_desktop_config.json
-└── pyproject.toml
+│   ├── server.py           MCP server — 13 tools, 4 layers
+│   ├── data_store.py       NSE bhavcopy → SQLite (the free data spine)
+│   ├── scanner.py          deterministic market screen
+│   ├── indicators.py       RSI/MACD/BB/EMA/ATR in pure pandas (no pandas_ta)
+│   ├── signals.py          trend + mean-reversion alpha models → Signal objects
+│   ├── market_research.py  per-instrument research (Kite or local DB)
+│   ├── research_web.py     news/catalyst lookup (Tavily)
+│   ├── journal.py          decision log + EOD self-scoring
+│   ├── risk.py             mandate + kill-switch order gate
+│   ├── session_manager.py  Kite auth + daily token cache (IST-aware)
+│   ├── batch_runner.py     standalone morning report (llmfin-research)
+│   └── auth.py             Kite OAuth CLI helper
+├── risk_limits.example.json
+├── watchlist.json           optional fixed watchlist for llmfin-research
+└── claude_desktop_config.json
 ```
 
-## Scheduled Batch (Windows Task Scheduler)
+Data lives in `~/.llmfin/` (`market.db`, `journal.db`, `orders.db`), overridable
+via `LLMFIN_DATA_DIR`.
 
-Run research every morning at 9:00 AM before market open:
+## Design inspirations
 
-```batch
-# save as run_research.bat
-cd C:\Users\SahilTamang\downloads\llmfin
-.venv\Scripts\activate
-set LLMFIN_WATCHLIST=watchlist.json
-set LLMFIN_REPORT_DIR=reports
-llmfin-research
-```
-
-Schedule via Task Scheduler → New Task → Trigger: Daily 9:00 AM.
+- [ai-hedge-fund v2](https://github.com/virattt/ai-hedge-fund) — the AlphaModel/Signal
+  abstraction: every signal source, LLM or quant, returns conviction + reasoning
+  through one interface.
+- [Vibe-Trading](https://github.com/HKUDS/Vibe-Trading) — user-committed mandates and
+  filesystem kill switches as structural (not prompt-level) guardrails.
+- [zerodha/kite-mcp-server](https://github.com/zerodha/kite-mcp-server) — broker
+  plumbing reference. llmfin is the layer that sits *above* raw broker access.
 
 ## ⚠️ Disclaimer
 
-This software is for **educational and research purposes only**. It does not constitute financial advice. Algorithmic trading carries significant risk of loss. Always paper-trade and validate strategies before using real capital. The authors are not responsible for any financial losses incurred.
+Educational and research software. Not financial advice, not a registered
+investment adviser. Intraday signal quality from any system — LLM or otherwise —
+is modest at best; that's exactly why the journal exists. Paper-trade first,
+size small, and let `eod_review` tell you the truth about your hit rate.

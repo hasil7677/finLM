@@ -155,24 +155,38 @@ via `LLMFIN_DATA_DIR`.
 ## Backtest — what the deterministic core is actually worth
 
 `llmfin-backtest` replays the scanner + signal models point-in-time over the
-local DB (entries at next-day open, ATR stops/targets, stop-first assumption,
-gap-through-stop handling — no look-ahead). Results on 224 scan days
-(May 2025 – July 2026, ~2,750 simulated trades, before transaction costs):
+local DB with no look-ahead: entries at next-day open (or a pullback limit),
+ATR stops/targets from the actual entry, stop-first assumption, gap-through
+handling, and **benchmark-adjusted alpha** (equal-weight liquid-universe
+index) so a market drift can't masquerade as edge. The engine separates the
+expensive scan pass from exit simulation, so parameter sweeps and
+train/test splits (`--start` / `--end`) are cheap.
 
-| Strategy bucket | Trades | Win % | Avg P&L | Profit factor |
-|---|---|---|---|---|
-| Chase strength (trend-follow **BUY** on movers) | 1,326 | 37% | **-0.62%** | 0.83 |
-| Fade the spike (mean-rev **SELL**) | 939 | 47.5% | **+0.37%** | 1.12 |
-| Fade the dump (trend-follow **SELL**) | 460 | 51% | **+0.72%** | 1.23 |
-| Passive hold of all scanner candidates | 2,225 | 42% | -0.80% | 0.81 |
+Findings on ~11 months of full-universe NSE data (2,758 signal events,
+train = pre-Feb 2026, test = after; before transaction costs):
 
-The honest read: **NSE scanner-day movers fade.** Buying yesterday's spike is
-a reliably losing trade; the exploitable pattern is the reversal — and since
-retail cash-market shorting beyond intraday isn't practical in India, the
-core's proven value today is as a *filter* (don't chase; wait for the fade)
-and as risk management (ATR exits beat passive holding by ~0.7pp/trade).
-This is exactly the kind of truth the journal + backtest loop exists to
-surface — rerun it as data accumulates: `llmfin-backtest --horizon 5`.
+1. **Chasing movers loses, everywhere.** Buying yesterday's spike at next
+   open: ~37% win rate, ≈ -1.3% alpha/trade in train, negative in every
+   config tested. This is the single most valuable output: the system now
+   *knows* not to do the thing naive AI stock-pickers do.
+2. **The fade is real alpha, not beta.** Short-the-mover strategies kept
+   +0.5 to +1.6% alpha/trade out-of-sample even while the benchmark rose
+   ~26% in the test window.
+3. **Best robust config: pullback-entry fade** — wait up to 3 days for a
+   bounce to `scan_close + 0.5×ATR`, short there, stop 2.0×ATR, target
+   2.5×ATR, horizon 10 days: 935 trades, 52.6% win, +0.58% raw /
+   **+1.2% alpha** per trade, profit factor 1.18, positive alpha in 10 of
+   12 months. It *improved* out-of-sample (train PF 1.14 → test PF 1.27),
+   which is what a real pattern looks like.
+
+Practical constraints, stated plainly: retail cash-market shorting beyond
+intraday isn't possible in India, so the fade edge is directly tradeable
+only via F&O names or intraday; for cash-only accounts the proven value is
+the **avoid/exit filter** (holding something that just spiked on volume is
+a de-risking signal) and ATR exits (~0.7pp/trade better than passive).
+The long side has no edge in this candidate stream — finding one (quiet
+uptrends? post-fade re-entries?) is the next experiment, and the journal
+exists to keep score.
 
 ## Design inspirations
 

@@ -25,6 +25,7 @@ llmfin-server = "llmfin.server:main"
 llmfin-research = "llmfin.batch_runner:main"
 llmfin-scan = "llmfin.scanner:main"
 llmfin-ingest = "llmfin.data_store:main"
+llmfin-backtest = "llmfin.backtest:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

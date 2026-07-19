@@ -152,6 +152,28 @@ finLLM/
 Data lives in `~/.llmfin/` (`market.db`, `journal.db`, `orders.db`), overridable
 via `LLMFIN_DATA_DIR`.
 
+## Backtest — what the deterministic core is actually worth
+
+`llmfin-backtest` replays the scanner + signal models point-in-time over the
+local DB (entries at next-day open, ATR stops/targets, stop-first assumption,
+gap-through-stop handling — no look-ahead). Results on 224 scan days
+(May 2025 – July 2026, ~2,750 simulated trades, before transaction costs):
+
+| Strategy bucket | Trades | Win % | Avg P&L | Profit factor |
+|---|---|---|---|---|
+| Chase strength (trend-follow **BUY** on movers) | 1,326 | 37% | **-0.62%** | 0.83 |
+| Fade the spike (mean-rev **SELL**) | 939 | 47.5% | **+0.37%** | 1.12 |
+| Fade the dump (trend-follow **SELL**) | 460 | 51% | **+0.72%** | 1.23 |
+| Passive hold of all scanner candidates | 2,225 | 42% | -0.80% | 0.81 |
+
+The honest read: **NSE scanner-day movers fade.** Buying yesterday's spike is
+a reliably losing trade; the exploitable pattern is the reversal — and since
+retail cash-market shorting beyond intraday isn't practical in India, the
+core's proven value today is as a *filter* (don't chase; wait for the fade)
+and as risk management (ATR exits beat passive holding by ~0.7pp/trade).
+This is exactly the kind of truth the journal + backtest loop exists to
+surface — rerun it as data accumulates: `llmfin-backtest --horizon 5`.
+
 ## Design inspirations
 
 - [ai-hedge-fund v2](https://github.com/virattt/ai-hedge-fund) — the AlphaModel/Signal

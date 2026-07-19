@@ -1,0 +1,17 @@
+[
+  {"symbol": "RELIANCE",   "instrument_token": 738561,   "exchange": "NSE"},
+  {"symbol": "TCS",        "instrument_token": 2953217,  "exchange": "NSE"},
+  {"symbol": "HDFCBANK",   "instrument_token": 341249,   "exchange": "NSE"},
+  {"symbol": "INFY",       "instrument_token": 408065,   "exchange": "NSE"},
+  {"symbol": "ICICIBANK",  "instrument_token": 1270529,  "exchange": "NSE"},
+  {"symbol": "HINDUNILVR", "instrument_token": 356865,   "exchange": "NSE"},
+  {"symbol": "WIPRO",      "instrument_token": 969473,   "exchange": "NSE"},
+  {"symbol": "AXISBANK",   "instrument_token": 1510401,  "exchange": "NSE"},
+  {"symbol": "SBIN",       "instrument_token": 779521,   "exchange": "NSE"},
+  {"symbol": "BHARTIARTL", "instrument_token": 2714625,  "exchange": "NSE"},
+  {"symbol": "KOTAKBANK",  "instrument_token": 492033,   "exchange": "NSE"},
+  {"symbol": "LT",         "instrument_token": 2939649,  "exchange": "NSE"},
+  {"symbol": "MARUTI",     "instrument_token": 2815745,  "exchange": "NSE"},
+  {"symbol": "SUNPHARMA",  "instrument_token": 857857,   "exchange": "NSE"},
+  {"symbol": "BAJFINANCE", "instrument_token": 81153,    "exchange": "NSE"}
+]

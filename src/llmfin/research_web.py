@@ -21,9 +21,21 @@ import requests
 TAVILY_URL = "https://api.tavily.com/search"
 
 
-def research_symbol(symbol: str, company_name: str = "", days: int = 3, max_results: int = 5) -> dict[str, Any]:
+def research_symbol(
+    symbol: str,
+    company_name: str = "",
+    days: int = 3,
+    max_results: int = 5,
+    change_pct: float | None = None,
+    move_date: str = "",
+) -> dict[str, Any]:
     """Search recent news for an NSE symbol. Returns Tavily's synthesized
-    answer plus the top sources, ready for the LLM to weigh."""
+    answer plus the top sources, ready for the LLM to weigh.
+
+    Pass change_pct/move_date from the scanner hit when you have them — a
+    query like 'Relaxo Footwears share price surges 20% 2026-07-17 reason'
+    retrieves far better than a generic 'why moving' search.
+    """
     api_key = os.getenv("TAVILY_API_KEY", "").strip()
     if not api_key:
         return {
@@ -34,15 +46,22 @@ def research_symbol(symbol: str, company_name: str = "", days: int = 3, max_resu
             )
         }
 
-    query = f"{company_name or symbol} NSE stock news why moving"
+    name = company_name or symbol
+    if change_pct is not None:
+        verb = "surges" if change_pct > 0 else "falls"
+        query = f"{name} share price {verb} {abs(change_pct):.0f}% {move_date} NSE reason news".strip()
+    else:
+        query = f"{name} NSE stock news why moving"
+    # General index + advanced depth beats topic:"news" for Indian mid-caps —
+    # the news vertical has thin coverage outside large caps and returns
+    # unrelated big-cap stories instead (verified: RELAXO +20% day was
+    # invisible on topic:news, fully covered on general).
     resp = requests.post(
         TAVILY_URL,
         json={
             "api_key": api_key,
             "query": query,
-            "topic": "news",
-            "days": days,
-            "search_depth": "basic",
+            "search_depth": "advanced",
             "max_results": max_results,
             "include_answer": True,
         },

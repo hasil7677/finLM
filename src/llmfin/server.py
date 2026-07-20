@@ -167,13 +167,25 @@ async def get_batch_research(symbols: list[str], lookback_days: int = 180) -> st
 
 
 @mcp.tool()
-async def research_symbol(symbol: str, company_name: str = "", days: int = 3) -> str:
+async def research_symbol(
+    symbol: str,
+    company_name: str = "",
+    days: int = 3,
+    change_pct: Optional[float] = None,
+    move_date: str = "",
+) -> str:
     """Find out WHY a stock is moving: recent news, earnings, orders, corporate
     actions — via web search (Tavily). A 4% gap on a real catalyst is a
     different trade than a 4% gap on nothing; run this on every scan_market
-    survivor before ranking. Requires TAVILY_API_KEY in the environment."""
+    survivor before ranking. ALWAYS pass change_pct and move_date from the
+    scan_market hit when available — it makes the search dramatically more
+    precise. Weigh the returned sources yourself; the synthesized answer can
+    conflate companies. Requires TAVILY_API_KEY in the environment."""
     result = await anyio.to_thread.run_sync(
-        lambda: _research_symbol(symbol, company_name=company_name, days=days)
+        lambda: _research_symbol(
+            symbol, company_name=company_name, days=days,
+            change_pct=change_pct, move_date=move_date,
+        )
     )
     return _json(result)
 

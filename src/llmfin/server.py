@@ -411,8 +411,26 @@ async def get_risk_status() -> str:
 # ---------------------------------------------------------------------------
 
 def main() -> None:
-    logger.info("Starting llmfin MCP server (stdio) …")
-    mcp.run()
+    import argparse
+
+    parser = argparse.ArgumentParser(description="llmfin MCP server")
+    parser.add_argument(
+        "--http",
+        action="store_true",
+        help="Serve over streamable HTTP at http://127.0.0.1:<port>/mcp "
+        "(for Claude Desktop custom connectors) instead of stdio",
+    )
+    parser.add_argument("--port", type=int, default=8747)
+    args = parser.parse_args()
+
+    if args.http:
+        mcp.settings.host = "127.0.0.1"   # local only — never bind 0.0.0.0
+        mcp.settings.port = args.port
+        logger.info("Starting llmfin MCP server at http://127.0.0.1:%d/mcp …", args.port)
+        mcp.run(transport="streamable-http")
+    else:
+        logger.info("Starting llmfin MCP server (stdio) …")
+        mcp.run()
 
 
 if __name__ == "__main__":

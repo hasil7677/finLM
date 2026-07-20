@@ -30,7 +30,10 @@ from typing import Optional
 from dotenv import load_dotenv
 from kiteconnect import KiteConnect
 
+# Load .env from the current directory AND from the repo root (next to
+# src/), so keys work no matter where the host app launches the server from.
 load_dotenv()
+load_dotenv(Path(__file__).resolve().parents[2] / ".env")
 
 logger = logging.getLogger(__name__)
 

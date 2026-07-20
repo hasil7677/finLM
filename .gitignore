@@ -6,3 +6,4 @@ risk_limits.json
 KILL_SWITCH
 reports/
 *.egg-info/
+llmfin.mcpb

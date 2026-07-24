@@ -7,3 +7,4 @@ KILL_SWITCH
 reports/
 *.egg-info/
 llmfin.mcpb
+*.pptx

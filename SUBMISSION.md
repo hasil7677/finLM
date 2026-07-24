@@ -1,4 +1,4 @@
-# Sarathi — the intelligence layer that won't let your LLM chase
+# finLM — the intelligence layer that won't let your LLM chase
 
 **An MCP server that gives any LLM a disciplined trading brain for Indian markets: it scans all ~2,700 NSE stocks, explains why they're moving, refuses to bypass your risk limits, and grades every call it makes.**
 
@@ -8,9 +8,9 @@ Broker MCP servers already exist — Zerodha ships one, so does Alpaca. But they
 
 So you get two bad options: raw broker access with no judgment, or confident-sounding predictions with no evidence.
 
-## What Sarathi does
+## What finLM does
 
-Sarathi is the missing layer between them — 13 MCP tools across four stages, built on one principle: **the LLM never predicts prices and never bypasses risk math.**
+finLM is the missing layer between them — 13 MCP tools across four stages, built on one principle: **the LLM never predicts prices and never bypasses risk math.**
 
 - **Discovery (deterministic).** A nightly job pulls NSE's free daily bhavcopy into SQLite, and `scan_market` screens the entire universe down to the 10-15 names that are liquid *and* unusually active — price/volume/turnover floors, then gap %, change %, and volume against a 20-day average. No LLM, no paid data feed, no broker account.
 - **Analysis (two opinions, never averaged).** Each candidate runs through two independent alpha models — trend-following and mean-reversion — that each return a conviction score, written reasoning, and an ATR-based entry/stop/target. They're deliberately not blended into one number, because a strong uptrend is a buy to one and an overbought sell to the other; collapsing that disagreement hides the actual decision. Then `research_symbol` searches the web for *why* the stock moved — earnings, order wins, or nothing at all.
@@ -19,7 +19,7 @@ Sarathi is the missing layer between them — 13 MCP tools across four stages, b
 
 ## Why it's different: it proved itself, then admitted where it was wrong
 
-Sarathi ships with a point-in-time backtest engine (next-day-open entries, stop-first assumptions, gap-through handling, train/test splits, and benchmark-adjusted alpha so a rising market can't masquerade as skill). Across ~11 months of full-universe NSE data and 2,758 signal events:
+finLM ships with a point-in-time backtest engine (next-day-open entries, stop-first assumptions, gap-through handling, train/test splits, and benchmark-adjusted alpha so a rising market can't masquerade as skill). Across ~11 months of full-universe NSE data and 2,758 signal events:
 
 - **Chasing spikes loses, in every configuration tested** — 37% win rate, about -1.3% alpha per trade. The system's most valuable output is knowing not to do the thing every naive AI picker does.
 - **Fading them is real alpha, not market beta** — short-the-mover held +0.5% to +1.6% alpha per trade out-of-sample *while the benchmark rose 26%*.

@@ -1,4 +1,6 @@
-# llmfin — MCP Trading Intelligence Layer for NSE
+# finLM — MCP Trading Intelligence Layer for NSE
+
+*(The Python package and CLI commands are named `llmfin`; finLM is the project name.)*
 
 > An MCP server that gives LLMs a real trading intelligence layer for Indian markets:
 > deterministic market scanning, regime-separated signals, news research, a decision

@@ -1,56 +1,70 @@
-# finLM — the intelligence layer that won't let your LLM chase
+# finLM — a governance layer for financial agents
 
-**An MCP server that gives any LLM a disciplined trading brain for Indian markets: it scans all ~2,700 NSE stocks, explains why they're moving, refuses to bypass your risk limits, and grades every call it makes.**
+**Theme: Governance Layer for Financial Agents**
+
+**Everyone is shipping financial AI agents. Nobody is shipping the thing that makes them safe to deploy. finLM is that layer — enforced mandates, a kill switch, a reasoning audit trail, and automated outcome scoring — and we proved it by running a real financial agent inside it against live markets.**
 
 ## The problem
 
-Broker MCP servers already exist — Zerodha ships one, so does Alpaca. But they're plumbing: they hand an LLM live prices and an order button, with no memory, no analytics, and no enforced risk controls. Zerodha's own hosted server can't even fetch your trade history, and its "safety" is a flag the model sets on itself. Meanwhile every AI stock-picker demo asks you to trust a language model's price predictions, which the research says are weak at short horizons.
+Financial agent "safety" today is theatre. Zerodha's official trading MCP server — the reference implementation for LLM-driven trading in India — gates order placement behind a `confirmed=true` parameter that the model sets on itself. That is not a control; it's a suggestion the agent can approve on your behalf. Across the ecosystem the pattern repeats: guardrails live in prompts, where they get ignored under pressure, rather than in code the model cannot reach.
 
-So you get two bad options: raw broker access with no judgment, or confident-sounding predictions with no evidence.
+And when something does go wrong, nobody can answer the questions a risk officer actually asks. What did the agent decide? What was its reasoning *at the time*, not reconstructed afterwards? Was it right? Financial agents today are unauditable by construction — they leave behind chat logs, not records.
 
-## What finLM does
+## The solution: four governance primitives
 
-finLM is the missing layer between them — 13 MCP tools across four stages, built on one principle: **the LLM never predicts prices and never bypasses risk math.**
+finLM is an MCP server that sits between any LLM and a financial system of record. The LLM gets rich capability; the governance layer decides what actually happens. Four primitives, all enforced server-side:
 
-- **Discovery (deterministic).** A nightly job pulls NSE's free daily bhavcopy into SQLite, and `scan_market` screens the entire universe down to the 10-15 names that are liquid *and* unusually active — price/volume/turnover floors, then gap %, change %, and volume against a 20-day average. No LLM, no paid data feed, no broker account.
-- **Analysis (two opinions, never averaged).** Each candidate runs through two independent alpha models — trend-following and mean-reversion — that each return a conviction score, written reasoning, and an ATR-based entry/stop/target. They're deliberately not blended into one number, because a strong uptrend is a buy to one and an overbought sell to the other; collapsing that disagreement hides the actual decision. Then `research_symbol` searches the web for *why* the stock moved — earnings, order wins, or nothing at all.
-- **Judgment (the feedback loop).** Every pick is journaled with its thesis verbatim, and `eod_review` later scores it against real closing prices: stop hit, target hit, or still open, with all-time hit-rate stats.
-- **Execution (guardrails in code, not prompts).** Orders are validated server-side against a mandate file the user writes — order-value cap, quantity cap, daily count, symbol allowlists — plus a filesystem kill switch. No mandate file means no orders. There is no parameter the model can pass to get around it.
+**1. Mandate enforcement.** Every consequential action is validated against a policy file the *user* writes, outside the conversation — value caps, quantity caps, daily action limits, instrument allowlists and blocklists, permitted action types. Crucially it **fails closed**: if no mandate exists, nothing executes. There is no parameter, phrasing, or claimed authority that lets the model bypass it, because the check runs in code the model can only call, never modify.
 
-## Why it's different: it proved itself, then admitted where it was wrong
+**2. Kill switch.** A filesystem circuit breaker. Drop a `KILL_SWITCH` file and every action is refused instantly, no restart, no config reload, no cooperation from the agent required. Removing it restores service. This is the control a human needs when an agent is misbehaving *right now*.
 
-finLM ships with a point-in-time backtest engine (next-day-open entries, stop-first assumptions, gap-through handling, train/test splits, and benchmark-adjusted alpha so a rising market can't masquerade as skill). Across ~11 months of full-universe NSE data and 2,758 signal events:
+**3. Reasoning audit trail.** Every decision is journaled at the moment it's made, with the agent's full thesis captured verbatim — not a summary written later. Each record carries the decision, the parameters, the reasoning, and a timestamp. This is the artifact that makes an agent reviewable: you can reconstruct not just what it did, but why it thought so.
 
-- **Chasing spikes loses, in every configuration tested** — 37% win rate, about -1.3% alpha per trade. The system's most valuable output is knowing not to do the thing every naive AI picker does.
-- **Fading them is real alpha, not market beta** — short-the-mover held +0.5% to +1.6% alpha per trade out-of-sample *while the benchmark rose 26%*.
-- **Best robust setup: pullback-entry fade** — 935 trades, 52.6% win rate, +1.2% alpha per trade, profit factor 1.18, positive alpha in 10 of 12 months, and it *improved* out-of-sample (PF 1.14 → 1.27), which is what a real pattern looks like rather than a curve fit.
+**4. Automated outcome scoring.** The layer closes the loop by grading its own past decisions against ground truth and reporting hit rates over time. Logging tells you what happened; scoring tells you whether the agent is any good. Deployed agents drift, and without an automatic scorer nobody notices until it's expensive.
 
-Then it ran forward, live. Five calls were logged on 21 July and graded on 24 July: the top fade (BEPL — a 100x-average-volume blowoff with no findable catalyst) hit its target for **+10.31%**, roughly +9.4% alpha against a market that fell 0.95%. The three "avoid" calls all dropped 6-10%, so not chasing them was right.
+Supporting these is **pre-deployment policy validation**: a point-in-time simulator that replays the agent's decision policy over historical data with strict no-look-ahead rules, train/test splits, and benchmark adjustment — so a policy is evidenced *before* it touches production, and a favourable environment can't be mistaken for competence.
 
-It also recorded a hypothesis it got wrong: two of those avoids were spared *because they had genuine earnings catalysts*, on the theory that catalyst-backed moves fade less. They faded just as hard. Sample size five, one week — but it's logged, dated, and testable, which is the entire point. Most AI trading projects can't tell you whether they were right. This one keeps receipts.
+## Proof: we ran a real agent inside it
+
+Governance layers are easy to describe and hard to trust, so we built a genuinely capable financial agent and governed it. The domain is Indian equities (NSE), chosen deliberately: markets return unambiguous ground truth on a fixed schedule, so every claim the agent makes gets graded by reality within days — no human labelling, no vibes.
+
+The agent screens ~2,700 stocks daily from free public exchange data, runs two independent quantitative models that must each state their conviction and reasoning, researches the real-world catalyst behind each move via web search, and proposes trades with explicit entry, stop and target. Everything it proposes flows through the four primitives above.
+
+What the governance layer surfaced:
+
+- **Pre-deployment validation caught a losing policy before any money moved.** Across 2,758 historical decision events, the intuitive strategy — chase what's already moving — lost in *every* configuration tested: 37% win rate, roughly -1.3% benchmark-adjusted return per trade. An ungoverned agent would have shipped this; it looks compelling in a demo.
+- **It validated the counterintuitive one.** The opposite policy held +1.2% benchmark-adjusted return per trade across 935 trades, profit factor 1.18, positive in 10 of 12 months, and *improved* on held-out data (1.14 → 1.27) — the signature of a real effect rather than a curve fit.
+- **Live, the audit trail earned its keep.** Five decisions were journaled on 21 July and automatically scored on 24 July. The highest-conviction call returned **+10.31%** against a market that fell 0.95%. The three "take no action" calls all avoided 6-10% losses — and because "do nothing" was recorded as a decision with reasoning, its value is measurable rather than invisible.
+- **Most importantly, it caught itself being wrong.** The agent had recorded a hypothesis — that moves backed by genuine news catalysts behave differently — and used it to justify two of those inactions. The outcome data contradicted it. That reversal exists as a dated, reviewable record instead of a forgotten assumption, which is precisely what governance is *for*.
+
+## Why this generalises beyond trading
+
+The four primitives are domain-agnostic; only two things change per use case: the action schema and the outcome scorer. The same layer governs a dispute-resolution agent (mandate: refund ceilings, per-day counts, eligible transaction types; scorer: was the chargeback upheld?), a card-benefit activation agent (mandate: which benefits, which cardholder segments; scorer: was the benefit actually used?), or any servicing agent taking consequential action on a customer account.
+
+Trading was the proving ground because the feedback loop is fast, quantitative and honest. The deliverable is the layer.
 
 ## Tech
 
-Python, FastMCP, SQLite, pandas (hand-rolled indicators — no dead dependencies), Tavily for news, Zerodha Kite Connect for the live tier. Works with **zero credentials**: the scanner, both signal models, the journal, and the backtest all run on free public NSE data. API keys only unlock live quotes and order placement.
+Python, FastMCP (13 tools over the Model Context Protocol), SQLite for the journal and market store, pandas for deterministic analytics, Tavily for catalyst research, Zerodha Kite Connect for the live financial system. Model-agnostic: any MCP client works — verified in Claude Desktop and Claude Code. Runs with **zero credentials** on free public data; API keys only unlock the live tier.
 
 ## Status
 
-Working end-to-end and verified over the MCP protocol — 13 tools, live in Claude Desktop and Claude Code. 14 months of market history ingested, backtest reproducible from the repo, journal actively scoring live calls.
+Working end-to-end and verified over the protocol. 14 months of market history ingested, simulator reproducible from the repo, journal actively scoring live decisions, mandate and kill switch enforced and tested (they fail closed).
 
-**Next:** benchmark-adjusted journal analytics with catalyst tagging (to properly test the hypothesis above), a long-side scanner, and a paper-portfolio equity curve.
+**Next:** benchmark-adjusted journal analytics with catalyst tagging to properly test the hypothesis above, plus per-decision attribution reporting for reviewers.
 
 ---
 
 ## Short-form fields (for submission forms)
 
-**Tagline:** finLM — an MCP intelligence layer that gives LLMs a disciplined trading brain, and makes them prove it.
+**Theme:** Governance Layer for Financial Agents
 
-**Theme:** Verifiable agentic AI — evidence over vibes. This isn't really a trading project; it's about making an AI agent trustworthy when the stakes are real. Markets are the ideal proving ground because reality grades you automatically.
+**Tagline:** finLM — the governance layer financial agents are missing: enforced mandates, a kill switch, a reasoning audit trail, and automated scoring. Proven by running a live-market agent inside it.
 
-**Problem:** Broker MCP servers are pure plumbing — live prices and an order button, no memory, no analytics, and "safety" that's just a flag the model sets on itself. AI stock-pickers ask you to trust LLM price predictions that research shows are weak at short horizons. Nobody ships the layer in between: judgment with guardrails, and proof it works.
+**Problem:** Financial agent safety today lives in prompts, not code. The reference LLM trading server in India gates real orders behind a flag the model sets on itself. And when an agent errs, nobody can answer what it decided, why it thought so, or whether it was right — these systems leave chat logs, not records.
 
-**Idea:** Split the work by what each side is good at. Deterministic math finds what is moving and enforces what you're allowed to do. The LLM explains why it's moving and writes the plan. Every decision is logged with its reasoning and scored against reality later. The LLM never predicts prices and never bypasses risk math.
+**Solution:** An MCP layer between any LLM and a financial system of record, enforcing four primitives server-side: (1) mandate validation against a user-written policy that fails closed and cannot be bypassed by the model; (2) a filesystem kill switch that freezes all action instantly; (3) a reasoning audit trail capturing each decision's thesis verbatim at decision time; (4) automated outcome scoring against ground truth, so agent quality is measured, not assumed. Plus a point-in-time simulator that validates a policy before deployment.
 
-**Solution:** 13 MCP tools in four layers — discovery (free NSE bhavcopy → SQLite → whole-universe screener), analysis (two never-averaged alpha models with reasoning and ATR trade plans, plus web catalyst research), judgment (thesis journal + automatic scoring against real closes), execution (server-side risk mandate + kill switch, unbypassable by the model).
+**Proof:** We governed a real NSE trading agent. Pre-deployment validation killed the intuitive strategy (-1.3% per trade across 2,758 events) and validated the counterintuitive one (+1.2% alpha, PF 1.18, held up out-of-sample). Live, its top call returned +10.31% against a falling market, and the scorer caught a recorded hypothesis being wrong.
 
-**One-box version (150 words):** finLM is an MCP server that gives any LLM a disciplined trading brain for Indian markets — and then makes it prove itself. Deterministic code screens all ~2,700 NSE stocks for unusual activity and enforces hard risk limits the model cannot bypass; the LLM does the part it's actually good at, explaining why a stock is moving and writing the trade plan. Every decision is journaled with its reasoning and later graded against real prices, so the system builds a track record instead of opinions. A point-in-time backtest across 2,758 signals proved chasing spikes loses (-1.3% alpha per trade) while fading them earns +1.2% alpha, holding up out-of-sample. Live, its top call returned +10.31% against a falling market — and it logged a hypothesis it got wrong. Works with zero credentials on free public data. The real subject isn't trading; it's how you make an AI agent trustworthy when money is on the line.
+**One-box version (150 words):** Everyone is shipping financial AI agents; nobody is shipping what makes them safe to deploy. Today's "safety" is prompt-level — the reference LLM trading server in India gates real money behind a flag the model sets itself — and when agents err, they leave chat logs instead of auditable records. finLM is an MCP governance layer enforcing four primitives in code the model cannot reach: mandates that fail closed, an instant filesystem kill switch, a reasoning audit trail capturing each decision's thesis as it's made, and automated outcome scoring against ground truth. A point-in-time simulator validates policies before deployment. We proved it by governing a real market agent: validation killed the intuitive strategy (-1.3% per trade over 2,758 events), confirmed the counterintuitive one (+1.2% alpha, holding out-of-sample), and live it returned +10.31% on its top call — while catching one of its own hypotheses being wrong. Swap the action schema and scorer, and the same layer governs disputes, benefits, or servicing.

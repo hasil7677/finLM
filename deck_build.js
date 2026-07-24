@@ -438,46 +438,57 @@ function kicker(s, text, dark) {
   title(s, "It caught its own hypothesis being wrong", true);
 
   s.addShape(pres.ShapeType.roundRect, {
-    x: M, y: 2.0, w: 5.7, h: 2.5, rectRadius: 0.12, fill: { color: NAVY_CARD },
+    x: M, y: 1.9, w: 5.7, h: 2.35, rectRadius: 0.12, fill: { color: NAVY_CARD },
   });
   s.addText("WHAT THE AGENT BELIEVED", {
-    x: M + 0.35, y: 2.3, w: 5.0, h: 0.3, fontFace: B, fontSize: 11, bold: true,
+    x: M + 0.35, y: 2.15, w: 5.0, h: 0.3, fontFace: B, fontSize: 11, bold: true,
     charSpacing: 2, color: ICE, margin: 0,
   });
   s.addText("“Moves backed by a genuine news catalyst behave differently, so we take no action on those.”", {
-    x: M + 0.35, y: 2.7, w: 5.0, h: 1.1, fontFace: H, fontSize: 16, italic: true,
+    x: M + 0.35, y: 2.52, w: 5.0, h: 1.1, fontFace: H, fontSize: 16, italic: true,
     color: LIGHT, lineSpacing: 24, margin: 0,
   });
   s.addText("Recorded in the journal, with reasoning, before the outcome was known.", {
-    x: M + 0.35, y: 3.85, w: 5.0, h: 0.5, fontFace: B, fontSize: 12,
+    x: M + 0.35, y: 3.66, w: 5.0, h: 0.45, fontFace: B, fontSize: 12,
     color: ICE, margin: 0,
   });
 
   s.addShape(pres.ShapeType.roundRect, {
-    x: 6.95, y: 2.0, w: 5.7, h: 2.5, rectRadius: 0.12, fill: { color: NAVY_CARD },
+    x: 6.95, y: 1.9, w: 5.7, h: 2.35, rectRadius: 0.12, fill: { color: NAVY_CARD },
   });
   s.addText("WHAT THE SCORER FOUND", {
-    x: 7.3, y: 2.3, w: 5.0, h: 0.3, fontFace: B, fontSize: 11, bold: true,
+    x: 7.3, y: 2.15, w: 5.0, h: 0.3, fontFace: B, fontSize: 11, bold: true,
     charSpacing: 2, color: MINT, margin: 0,
   });
   s.addText("The hypothesis was wrong.", {
-    x: 7.3, y: 2.7, w: 5.0, h: 0.45, fontFace: H, fontSize: 22, bold: true,
+    x: 7.3, y: 2.52, w: 5.0, h: 0.45, fontFace: H, fontSize: 22, bold: true,
     color: LIGHT, margin: 0,
   });
   s.addText("Catalyst-backed moves reversed just as hard. The agent's own reasoning cost it two profitable decisions — and the data said so within three days.", {
-    x: 7.3, y: 3.25, w: 5.0, h: 1.1, fontFace: B, fontSize: 13,
+    x: 7.3, y: 3.05, w: 5.0, h: 1.05, fontFace: B, fontSize: 13,
     color: ICE, lineSpacing: 19, margin: 0,
   });
 
+  s.addShape(pres.ShapeType.roundRect, {
+    x: M, y: 4.42, w: 11.93, h: 0.62, rectRadius: 0.12, fill: { color: "16274A" },
+  });
+  s.addText([
+    { text: "n = 5, one week. ", options: { bold: true, color: MINT } },
+    { text: "Not statistically valid — and logged, dated and testable anyway. That is the point: the loop caught it, not a person reviewing it later.", options: { color: ICE } },
+  ], {
+    x: M + 0.35, y: 4.42, w: 11.25, h: 0.62, fontFace: B, fontSize: 13,
+    valign: "middle", margin: 0,
+  });
+
   s.addText("A dated, reviewable reversal instead of a forgotten assumption.\nThat is what governance is for.", {
-    x: M, y: 4.95, w: 11.9, h: 1.0, fontFace: H, fontSize: 24, bold: true,
+    x: M, y: 5.25, w: 11.9, h: 1.0, fontFace: H, fontSize: 24, bold: true,
     color: LIGHT, lineSpacing: 34, margin: 0,
   });
   s.addText("Most AI agent projects cannot tell you whether they were right. This one keeps receipts — including the unflattering ones.", {
-    x: M, y: 6.1, w: 11.9, h: 0.5, fontFace: B, fontSize: 13.5,
+    x: M, y: 6.4, w: 11.9, h: 0.5, fontFace: B, fontSize: 13.5,
     color: ICE, margin: 0,
   });
-  s.addNotes("This is the slide that matters. The agent recorded a hypothesis, acted on it, and the scorer proved it wrong three days later. That reversal exists as a dated record instead of a forgotten assumption. No other agent framework produces this artifact.");
+  s.addNotes("This is the slide that matters. The agent recorded a hypothesis, acted on it, and the scorer proved it wrong three days later. Be first to say the sample size out loud: five decisions over one week, nowhere near statistically valid. The claim is not that the finding is conclusive — it is that the loop surfaced it automatically, dated and reviewable, without a human going looking. No other agent framework produces that artifact.");
 }
 
 // ============================================================

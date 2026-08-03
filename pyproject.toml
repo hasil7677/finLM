@@ -20,10 +20,17 @@ dependencies = [
     "anyio>=4.0.0",
 ]
 
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
 [project.scripts]
 llmfin-server = "llmfin.server:main"
 llmfin-research = "llmfin.batch_runner:main"
 llmfin-scan = "llmfin.scanner:main"
+llmfin-scan-accum = "llmfin.accumulation_scanner:main"
+llmfin-anomalies = "llmfin.diagnostics:main"
+llmfin-portfolio-backtest = "llmfin.portfolio_backtest:main"
+llmfin-regime-analysis = "llmfin.regime_analysis:main"
 llmfin-ingest = "llmfin.data_store:main"
 llmfin-backtest = "llmfin.backtest:main"
 

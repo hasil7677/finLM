@@ -4,11 +4,14 @@ server.py
 llmfin MCP server — the trading intelligence layer, exposed to any MCP client
 (Claude Desktop, Claude Code, Cursor, …) over stdio.
 
-Tool map (12 tools, 4 layers)
+Tool map (15 tools, 4 layers)
 ─────────────────────────────
   DISCOVERY   (free, no credentials — local bhavcopy DB)
     ingest_market_data      refresh the local NSE EOD database
     scan_market             deterministic screen: today's liquid movers
+    scan_accumulation       deterministic screen: quiet long-side candidates
+                             (unvalidated — see its docstring before trusting it)
+    list_data_anomalies     corporate-action adjustment decisions (audit trail)
   ANALYSIS    (free; upgrades to live Kite data when authenticated)
     research_instrument     indicators + trend/mean-reversion signals + ATR plan
     get_batch_research      the same, over a list of symbols
@@ -41,9 +44,11 @@ from mcp.server.fastmcp import FastMCP
 
 from llmfin import journal as journal_mod
 from llmfin import risk as risk_mod
-from llmfin.data_store import DATA_DIR, ingest_range
+from llmfin.data_store import DATA_DIR, DB_PATH, ingest_range
+from llmfin.diagnostics import list_data_anomalies as _list_anomalies
 from llmfin.market_research import research_instrument as _research
 from llmfin.research_web import research_symbol as _research_symbol
+from llmfin.accumulation_scanner import scan_quiet_accumulation as _scan_accumulation
 from llmfin.scanner import scan_market as _scan
 from llmfin.session_manager import get_kite_client, get_kite_client_or_none
 
@@ -103,6 +108,61 @@ async def scan_market(
     if not hits:
         return _json({"hits": [], "note": "No symbols passed the filters — try loosening them."})
     return _json([asdict(h) for h in hits])
+
+
+@mcp.tool()
+async def scan_accumulation(
+    min_price: float = 100.0,
+    min_avg_volume: int = 500_000,
+    min_volume_ratio: float = 1.3,
+    max_avg_range_pct: float = 3.5,
+    limit: int = 15,
+) -> str:
+    """Deterministically screen for quiet long-side accumulation candidates —
+    the opposite of scan_market.
+
+    scan_market finds explosions, and the backtest evidence (CLAUDE.md §6)
+    says explosions have no long edge: chasing them loses in every
+    configuration tested across 11 years of NSE history. This screen looks
+    instead for the quiet phase a long strategy actually needs: volume
+    rising broadly (not from one big print) without any single-day spike,
+    a tight trading range, and a mild steady grind higher.
+
+    UNVALIDATED: unlike scan_market's fade/chase result, this screen has not
+    been through the point-in-time backtest loop yet. Treat hits as research
+    candidates for research_symbol / research_instrument, not as a proven
+    edge — say so plainly if asked about track record. Uses the local
+    bhavcopy DB (run ingest_market_data if it errors).
+    """
+    hits = await anyio.to_thread.run_sync(
+        lambda: _scan_accumulation(
+            min_price=min_price,
+            min_avg_volume=min_avg_volume,
+            min_volume_ratio=min_volume_ratio,
+            max_avg_range_pct=max_avg_range_pct,
+            limit=limit,
+        )
+    )
+    if not hits:
+        return _json({"hits": [], "note": "No symbols passed the filters — try loosening them."})
+    return _json([asdict(h) for h in hits])
+
+
+@mcp.tool()
+async def list_data_anomalies(symbol: Optional[str] = None) -> str:
+    """Audit trail for the corporate-action back-adjuster: every suspect
+    split/bonus ratio it found across the full local price history, split
+    into what it auto-adjusted vs what it flagged and left alone (with why).
+
+    Run this after ingest_market_data pulls in new history, or whenever a
+    scan_market/scan_accumulation/backtest number looks off — a real
+    split/bonus in a symbol you follow should appear under "applied";
+    anything under "flagged" is either a genuine crash the guards correctly
+    declined to touch, or worth a closer look. Pass `symbol` to filter to
+    one name.
+    """
+    result = await anyio.to_thread.run_sync(lambda: _list_anomalies(DB_PATH, symbol))
+    return _json(result)
 
 
 # ═══════════════════════════════════════════════════════════════════════════

@@ -32,6 +32,8 @@ from typing import Optional
 import pandas as pd
 import requests
 
+from llmfin.corporate_actions import adjust_corporate_actions
+
 logger = logging.getLogger(__name__)
 
 DATA_DIR = Path(os.getenv("LLMFIN_DATA_DIR", "~/.llmfin")).expanduser()
@@ -173,55 +175,77 @@ def ingest_range(days_back: int = 60, force: bool = False) -> dict:
 
 
 def load_history(symbol: str, lookback_days: int = 250) -> pd.DataFrame:
-    """Daily OHLCV history for one symbol from the local DB (oldest→newest)."""
+    """Daily OHLCV history for one symbol from the local DB (oldest→newest),
+    back-adjusted for splits/bonuses. Raw bhavcopy has no such adjustment, so
+    a real split inside the window would otherwise look like a fake -50%
+    (or similar) crash to every indicator that reads across it. Pulls a
+    30-row buffer before the requested window so the adjuster's trailing-
+    volume and isolation checks have enough runway, then trims back down."""
     conn = _connect()
     df = pd.read_sql_query(
         """
-        SELECT date, open, high, low, close, volume FROM daily_prices
+        SELECT symbol, date, open, high, low, close, prev_close, volume FROM daily_prices
         WHERE symbol = ? ORDER BY date DESC LIMIT ?
         """,
         conn,
-        params=(symbol.upper(), lookback_days),
+        params=(symbol.upper(), lookback_days + 30),
     )
     conn.close()
     df = df.sort_values("date").reset_index(drop=True)
+    df, _adjustments = adjust_corporate_actions(df)
+    df = df.tail(lookback_days).reset_index(drop=True)
+    df = df[["date", "open", "high", "low", "close", "volume"]]
     df["date"] = pd.to_datetime(df["date"])
     return df
 
 
-def latest_snapshot() -> pd.DataFrame:
-    """Latest trading day's rows joined with each symbol's 20-day average volume
-    and 20-day high/low — the scanner's raw material."""
+def _recent_panel(calendar_days_back: int = 60) -> tuple[pd.DataFrame, str]:
+    """Corporate-action-adjusted daily panel for the trailing window across
+    all symbols, plus the latest ingested date. Shared base for any scanner
+    that needs more than one day of history per symbol (latest_snapshot's
+    single-day view, or a multi-day window scan like quiet-accumulation).
+
+    Back-adjusted for splits/bonuses before any rolling stat is computed —
+    a real split landing inside the window produces a fake giant single-day
+    move to every indicator that reads across it (see corporate_actions.py).
+    Only `calendar_days_back` calendar days per symbol are pulled, so a split
+    older than that no longer touches today's numbers and every scan doesn't
+    have to read full history.
+    """
     conn = _connect()
     latest = conn.execute("SELECT MAX(date) FROM daily_prices").fetchone()[0]
     if latest is None:
         conn.close()
         raise RuntimeError("Market DB is empty — run `llmfin-ingest` first.")
+    cutoff = (datetime.strptime(latest, "%Y-%m-%d") - timedelta(days=calendar_days_back)).strftime("%Y-%m-%d")
     df = pd.read_sql_query(
         """
-        WITH ranked AS (
-            SELECT symbol, date, close, volume,
-                   ROW_NUMBER() OVER (PARTITION BY symbol ORDER BY date DESC) AS rn
-            FROM daily_prices
-        ),
-        stats AS (
-            SELECT symbol,
-                   AVG(volume) AS avg_volume_20,
-                   AVG(close)  AS avg_close_20
-            FROM ranked WHERE rn BETWEEN 2 AND 21
-            GROUP BY symbol
-        )
-        SELECT d.symbol, d.date, d.open, d.high, d.low, d.close, d.prev_close,
-               d.volume, d.turnover, s.avg_volume_20, s.avg_close_20
-        FROM daily_prices d
-        JOIN stats s ON s.symbol = d.symbol
-        WHERE d.date = ?
+        SELECT symbol, date, open, high, low, close, prev_close, volume, turnover
+        FROM daily_prices WHERE date >= ? ORDER BY symbol, date
         """,
         conn,
-        params=(latest,),
+        params=(cutoff,),
     )
     conn.close()
-    return df
+    df, _adjustments = adjust_corporate_actions(df)
+    return df, latest
+
+
+def latest_snapshot() -> pd.DataFrame:
+    """Latest trading day's rows joined with each symbol's 20-day average volume
+    and 20-day average close — the mover scanner's raw material."""
+    df, latest = _recent_panel(60)
+    g = df.groupby("symbol", sort=False)
+    df = df.assign(
+        avg_volume_20=g["volume"].transform(lambda s: s.shift(1).rolling(20, min_periods=5).mean()),
+        avg_close_20=g["close"].transform(lambda s: s.shift(1).rolling(20, min_periods=5).mean()),
+        adj_prev_close=g["close"].transform(lambda s: s.shift(1)),
+    )
+    snap = df[df["date"] == latest].copy()
+    # Adjusted prev_close (not the raw DB column) so a split landing exactly
+    # on today's row doesn't show as a fake gap/change vs yesterday's close.
+    snap["prev_close"] = snap["adj_prev_close"].where(snap["adj_prev_close"].notna(), snap["prev_close"])
+    return snap.drop(columns=["adj_prev_close"]).reset_index(drop=True)
 
 
 def main() -> None:

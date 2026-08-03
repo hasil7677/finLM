@@ -36,24 +36,31 @@ import argparse
 import json
 import sqlite3
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Optional
 
 import numpy as np
 import pandas as pd
 
+from llmfin.corporate_actions import adjust_corporate_actions
 from llmfin.data_store import DB_PATH
 from llmfin.indicators import compute_indicators
 from llmfin.signals import run_models
 
-# Scanner parameters — identical to scanner.py defaults so the backtest
-# measures the same pipeline the MCP tools expose.
-MIN_PRICE = 100.0
-MIN_AVG_VOLUME = 500_000
-MIN_TURNOVER = 10.0 * 1e7
-MIN_VOLUME_RATIO = 1.5
-MIN_ABS_CHANGE = 1.0
 MIN_LOOKBACK = 60
 MAX_FWD = 20  # forward days captured per event
+
+
+@dataclass
+class ScanConfig:
+    """Point-in-time scanner thresholds — identical to scanner.py's defaults,
+    but exposed as a config so old eras (much lower NSE turnover/prices) can
+    be recalibrated without editing source."""
+    min_price: float = 100.0
+    min_avg_volume: float = 500_000
+    min_turnover: float = 10.0 * 1e7
+    min_volume_ratio: float = 1.5
+    min_abs_change: float = 1.0
 
 
 @dataclass
@@ -64,20 +71,28 @@ class ExitConfig:
     entry_style: str = "open"       # 'open' | 'pullback'
     pullback_atr: float = 0.5       # limit = scan close -/+ pullback_atr*ATR
     pullback_wait: int = 3          # days to wait for the fill
+    cost_pct: float = 0.4           # round-trip cost (brokerage + STT + slippage), see
+                                     # CLAUDE.md §7 -- subtracted from every trade's pnl
+                                     # so pnl_pct/alpha_pct are what a trade would actually
+                                     # keep, not a mental haircut applied after the fact
 
 
-def _load_panel() -> pd.DataFrame:
-    conn = sqlite3.connect(DB_PATH)
+def _load_panel(db_path: Path = DB_PATH, adjust_splits: bool = True) -> tuple[pd.DataFrame, list[dict]]:
+    conn = sqlite3.connect(db_path)
     df = pd.read_sql_query(
         "SELECT symbol, date, open, high, low, close, prev_close, volume, turnover "
         "FROM daily_prices ORDER BY symbol, date",
         conn,
     )
     conn.close()
-    return df
+    if adjust_splits:
+        df, adjustments = adjust_corporate_actions(df)
+    else:
+        adjustments = []
+    return df, adjustments
 
 
-def _pit_candidates(df: pd.DataFrame, limit: int) -> pd.DataFrame:
+def _pit_candidates(df: pd.DataFrame, limit: int, cfg: ScanConfig) -> pd.DataFrame:
     """Vectorized point-in-time scanner (see scanner.py for the live version)."""
     g = df.groupby("symbol", sort=False)
     df = df.assign(
@@ -85,13 +100,13 @@ def _pit_candidates(df: pd.DataFrame, limit: int) -> pd.DataFrame:
         hist_len=g.cumcount(),
     )
     df = df[df["hist_len"] >= MIN_LOOKBACK]
-    df = df[(df["prev_close"] > 0) & (df["close"] >= MIN_PRICE)]
-    df = df[(df["avg_volume_20"] >= MIN_AVG_VOLUME) & (df["turnover"] >= MIN_TURNOVER)]
+    df = df[(df["prev_close"] > 0) & (df["close"] >= cfg.min_price)]
+    df = df[(df["avg_volume_20"] >= cfg.min_avg_volume) & (df["turnover"] >= cfg.min_turnover)]
     df = df.assign(
         change_pct=(df["close"] - df["prev_close"]) / df["prev_close"] * 100,
         volume_ratio=df["volume"] / df["avg_volume_20"],
     )
-    df = df[(df["volume_ratio"] >= MIN_VOLUME_RATIO) & (df["change_pct"].abs() >= MIN_ABS_CHANGE)]
+    df = df[(df["volume_ratio"] >= cfg.min_volume_ratio) & (df["change_pct"].abs() >= cfg.min_abs_change)]
     df = df.assign(score=df["change_pct"].abs() * 0.5 + df["volume_ratio"].clip(upper=10))
     df = df.sort_values(["date", "score"], ascending=[True, False])
     return df.groupby("date", sort=False).head(limit)
@@ -107,12 +122,19 @@ def _benchmark_index(panel: pd.DataFrame) -> pd.Series:
     return (1 + daily).cumprod()
 
 
-def collect_events(limit: int = 10, conviction_min: float = 0.5) -> dict:
+def collect_events(
+    limit: int = 10,
+    conviction_min: float = 0.5,
+    db_path: Path = DB_PATH,
+    adjust_splits: bool = True,
+    scan_cfg: Optional[ScanConfig] = None,
+) -> dict:
     """The expensive pass: scan point-in-time, run indicators + models, and
     capture forward OHLC windows. Returns everything simulate() needs."""
-    panel = _load_panel()
+    scan_cfg = scan_cfg or ScanConfig()
+    panel, adjustments = _load_panel(db_path, adjust_splits)
     bench = _benchmark_index(panel)
-    candidates = _pit_candidates(panel, limit)
+    candidates = _pit_candidates(panel, limit, scan_cfg)
     by_symbol = {s: sdf.reset_index(drop=True) for s, sdf in panel.groupby("symbol", sort=False)}
 
     events: list[dict] = []
@@ -152,7 +174,7 @@ def collect_events(limit: int = 10, conviction_min: float = 0.5) -> dict:
         for s in sigs:
             events.append({**ev_base, "model": s.model, "direction": s.direction, "conviction": s.conviction})
 
-    return {"events": events, "bench": bench}
+    return {"events": events, "bench": bench, "panel": panel, "corporate_action_adjustments": adjustments}
 
 
 def _entry_fill(ev: dict, cfg: ExitConfig, sign: int) -> Optional[tuple[float, int]]:
@@ -206,14 +228,15 @@ def simulate(events: list[dict], bench: pd.Series, cfg: ExitConfig) -> pd.DataFr
         if exit_price is None:
             exit_price, x_idx = float(ev["fwd_close"][last]), last
 
-        pnl = sign * (exit_price - entry) / entry * 100
+        gross_pnl = sign * (exit_price - entry) / entry * 100
+        pnl = gross_pnl - cfg.cost_pct          # net of round-trip transaction cost
 
         d0, d1 = ev["fwd_dates"][e_idx], ev["fwd_dates"][x_idx]
         try:
             mkt = (bench.loc[d1] / bench.loc[d0] - 1) * 100
         except KeyError:
             mkt = 0.0
-        alpha = pnl - sign * mkt               # long alpha = pnl - mkt; short = pnl + mkt
+        alpha = pnl - sign * mkt               # long alpha = pnl - mkt; short = pnl + mkt (net of cost)
 
         out.append(
             {
@@ -226,8 +249,14 @@ def simulate(events: list[dict], bench: pd.Series, cfg: ExitConfig) -> pd.DataFr
                 "volume_ratio": ev["volume_ratio"],
                 "entry": round(entry, 2),
                 "exit": round(float(exit_price), 2),
+                "entry_date": d0,
+                "exit_date": d1,
+                # ATR-stop distance as % of entry -- the position-sizing input a
+                # portfolio layer needs to size "risk X% of equity per trade".
+                "stop_distance_pct": round(cfg.stop_mult * ev["atr"] / entry * 100, 3),
                 "reason": reason,
                 "days_held": x_idx - e_idx + 1,
+                "gross_pnl_pct": round(gross_pnl, 3),
                 "pnl_pct": round(pnl, 3),
                 "mkt_pct": round(float(mkt), 3),
                 "alpha_pct": round(float(alpha), 3),
@@ -237,6 +266,10 @@ def simulate(events: list[dict], bench: pd.Series, cfg: ExitConfig) -> pd.DataFr
 
 
 def stats(trades: pd.DataFrame) -> dict:
+    """All *_pct figures except avg_gross_pnl_pct are net of ExitConfig.cost_pct
+    -- win_rate and profit_factor use net pnl, so a bucket whose gross edge is
+    smaller than the round-trip cost correctly shows as unprofitable rather
+    than requiring a mental haircut applied after the fact."""
     if trades.empty:
         return {"trades": 0}
     pnl, alpha = trades["pnl_pct"].to_numpy(), trades["alpha_pct"].to_numpy()
@@ -244,6 +277,7 @@ def stats(trades: pd.DataFrame) -> dict:
     return {
         "trades": len(trades),
         "win_rate_pct": round(float((pnl > 0).mean() * 100), 1),
+        "avg_gross_pnl_pct": round(float(trades["gross_pnl_pct"].mean()), 2),
         "avg_pnl_pct": round(float(pnl.mean()), 2),
         "avg_alpha_pct": round(float(alpha.mean()), 2),
         "median_pnl_pct": round(float(np.median(pnl)), 2),
@@ -266,12 +300,16 @@ def run(
     conviction_min: float = 0.5,
     start: Optional[str] = None,
     end: Optional[str] = None,
+    db_path: Path = DB_PATH,
+    adjust_splits: bool = True,
+    scan_cfg: Optional[ScanConfig] = None,
     _cache: dict = {},
 ) -> dict:
-    key = (limit, conviction_min)
+    scan_cfg = scan_cfg or ScanConfig()
+    key = (str(db_path), limit, conviction_min, adjust_splits, tuple(scan_cfg.__dict__.values()))
     if key not in _cache:
         _cache.clear()
-        _cache[key] = collect_events(limit, conviction_min)
+        _cache[key] = collect_events(limit, conviction_min, db_path, adjust_splits, scan_cfg)
     data = _cache[key]
     events = data["events"]
     if start:
@@ -282,10 +320,21 @@ def run(
     result = summarize(trades)
     result["config"] = {
         **cfg.__dict__,
+        **scan_cfg.__dict__,
         "candidates_per_day": limit,
         "conviction_min": conviction_min,
         "window": [start or "begin", end or "latest"],
         "scan_days": int(trades["scan_date"].nunique()) if not trades.empty else 0,
+        "db_path": str(db_path),
+    }
+    adjustments = data["corporate_action_adjustments"]
+    applied = [a for a in adjustments if a.get("applied")]
+    flagged = [a for a in adjustments if not a.get("applied")]
+    result["corporate_action_adjustments"] = {
+        "applied_count": len(applied),
+        "flagged_unadjusted_count": len(flagged),
+        "applied_sample": applied[:20],
+        "flagged_sample": flagged[:20],
     }
     return result
 
@@ -296,13 +345,38 @@ def main() -> None:
     p.add_argument("--stop", type=float, default=1.5, help="ATR multiple for the stop")
     p.add_argument("--target", type=float, default=2.5, help="ATR multiple for the target")
     p.add_argument("--entry", choices=["open", "pullback"], default="open")
+    p.add_argument("--cost-pct", type=float, default=ExitConfig().cost_pct, help="Round-trip transaction cost, as a percent of entry price")
     p.add_argument("--conviction", type=float, default=0.5)
     p.add_argument("--limit", type=int, default=10)
     p.add_argument("--start", help="Only scan dates >= this (YYYY-MM-DD)")
     p.add_argument("--end", help="Only scan dates <= this (YYYY-MM-DD)")
+    p.add_argument("--db", default=str(DB_PATH), help="Path to the SQLite market DB (default: live market.db)")
+    p.add_argument("--min-price", type=float, default=ScanConfig().min_price)
+    p.add_argument("--min-avg-volume", type=float, default=ScanConfig().min_avg_volume)
+    p.add_argument("--min-turnover", type=float, default=ScanConfig().min_turnover, help="Rupees, not crore")
+    p.add_argument("--min-volume-ratio", type=float, default=ScanConfig().min_volume_ratio)
+    p.add_argument("--min-abs-change", type=float, default=ScanConfig().min_abs_change)
+    p.add_argument("--no-adjust-splits", action="store_true", help="Disable corporate-action back-adjustment")
     a = p.parse_args()
-    cfg = ExitConfig(horizon=a.horizon, stop_mult=a.stop, target_mult=a.target, entry_style=a.entry)
-    print(json.dumps(run(cfg, limit=a.limit, conviction_min=a.conviction, start=a.start, end=a.end), indent=2))
+    cfg = ExitConfig(horizon=a.horizon, stop_mult=a.stop, target_mult=a.target, entry_style=a.entry, cost_pct=a.cost_pct)
+    scan_cfg = ScanConfig(
+        min_price=a.min_price,
+        min_avg_volume=a.min_avg_volume,
+        min_turnover=a.min_turnover,
+        min_volume_ratio=a.min_volume_ratio,
+        min_abs_change=a.min_abs_change,
+    )
+    result = run(
+        cfg,
+        limit=a.limit,
+        conviction_min=a.conviction,
+        start=a.start,
+        end=a.end,
+        db_path=Path(a.db),
+        adjust_splits=not a.no_adjust_splits,
+        scan_cfg=scan_cfg,
+    )
+    print(json.dumps(result, indent=2))
 
 
 if __name__ == "__main__":

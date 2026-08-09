@@ -1,0 +1,134 @@
+{
+  "kind": "prereg_breadth",
+  "created_utc": "2026-08-08T21:12:18+00:00",
+  "git": {
+    "sha": "c5a838c6efa45a2cba02f5d833a41ed973141803",
+    "dirty": true,
+    "dirty_files": [
+      "M CLAUDE.md",
+      " M README.md",
+      " M SUBMISSION.md",
+      " M risk_limits.example.json",
+      " M src/llmfin/backtest.py",
+      " M src/llmfin/risk.py",
+      " M src/llmfin/server.py",
+      "?? src/llmfin/provenance.py",
+      "?? tests/test_provenance.py",
+      "?? tests/test_risk_gate_adversarial.py",
+      "?? tests/test_tool_contract.py"
+    ]
+  },
+  "environment": {
+    "python": "3.14.4",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "packages": {
+      "pandas": "3.0.3",
+      "numpy": "2.5.1"
+    }
+  },
+  "data": null,
+  "config": {
+    "source": "<scratch>"
+  },
+  "result": {
+    "committed_before_observing_live_breadth": true,
+    "model": {
+      "intercept": 12.480960232862245,
+      "slope": -0.20017645832405606,
+      "residual_se": 0.48691213914880915,
+      "r": -0.6347349669981962,
+      "r_squared": 0.40288847833020125,
+      "n": 11,
+      "df": 9,
+      "t_crit_0975": 2.2622,
+      "xbar": 50.778181818181814,
+      "sxx": 35.92916363636364
+    },
+    "historical_breadth_range": [
+      47.62,
+      53.66
+    ],
+    "historical_alpha_range": [
+      1.27,
+      3.52
+    ],
+    "observed_live_alpha_pct": 0.58,
+    "decision_rule": "Compute 2025-26 breadth with regime_analysis._year_regime_stats' definition. CONFIRMS the breadth model if +0.58 falls inside the 95% prediction interval at that breadth; CONTRADICTS it if outside. If live breadth falls outside [47.62, 53.66] the result is an extrapolation and is reported as such.",
+    "alpha_058_consistent_for_breadth_between": [
+      53.30000000000033,
+      79.95000000000071
+    ],
+    "grid": [
+      {
+        "breadth": 44.0,
+        "predict": 3.6731960666037775,
+        "lo": 1.9775983278263207,
+        "hi": 5.368793805381234,
+        "width": 3.3911954775549136
+      },
+      {
+        "breadth": 46.0,
+        "predict": 3.2728431499556656,
+        "lo": 1.8255830515946714,
+        "hi": 4.72010324831666,
+        "width": 2.8945201967219885
+      },
+      {
+        "breadth": 48.0,
+        "predict": 2.8724902333075537,
+        "lo": 1.6138311921899382,
+        "hi": 4.131149274425169,
+        "width": 2.517318082235231
+      },
+      {
+        "breadth": 50.0,
+        "predict": 2.472137316659442,
+        "lo": 1.312812487206993,
+        "hi": 3.6314621461118906,
+        "width": 2.3186496589048975
+      },
+      {
+        "breadth": 52.0,
+        "predict": 2.07178440001133,
+        "lo": 0.8996085482291085,
+        "hi": 3.2439602517935513,
+        "width": 2.344351703564443
+      },
+      {
+        "breadth": 54.0,
+        "predict": 1.671431483363218,
+        "lo": 0.37755780956952223,
+        "hi": 2.965305157156914,
+        "width": 2.5877473475873916
+      },
+      {
+        "breadth": 56.0,
+        "predict": 1.2710785667151043,
+        "lo": -0.22704446858273308,
+        "hi": 2.7692016020129415,
+        "width": 2.996246070595675
+      },
+      {
+        "breadth": 58.0,
+        "predict": 0.8707256500669924,
+        "lo": -0.8856304820890712,
+        "hi": 2.627081782223056,
+        "width": 3.5127122643121274
+      },
+      {
+        "breadth": 60.0,
+        "predict": 0.47037273341888053,
+        "lo": -1.5778830577246485,
+        "hi": 2.5186285245624096,
+        "width": 4.096511582287058
+      },
+      {
+        "breadth": 62.0,
+        "predict": 0.07001981677076863,
+        "lo": -2.2913499971004923,
+        "hi": 2.4313896306420295,
+        "width": 4.722739627742522
+      }
+    ]
+  }
+}

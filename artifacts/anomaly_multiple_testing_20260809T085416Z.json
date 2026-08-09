@@ -1,0 +1,381 @@
+{
+  "kind": "anomaly_multiple_testing",
+  "created_utc": "2026-08-09T08:54:16+00:00",
+  "git": {
+    "sha": "c5a838c6efa45a2cba02f5d833a41ed973141803",
+    "dirty": true,
+    "dirty_files": [
+      "M CLAUDE.md",
+      " M README.md",
+      " M SUBMISSION.md",
+      " M deck_build.js",
+      " M finLM_CodeStreet2026.pptx",
+      " M pyproject.toml",
+      " M risk_limits.example.json",
+      " M src/llmfin/backtest.py",
+      " M src/llmfin/risk.py",
+      " M src/llmfin/server.py",
+      "?? artifacts/",
+      "?? src/llmfin/anomalies.py",
+      "?? src/llmfin/provenance.py",
+      "?? tests/test_anomalies.py",
+      "?? tests/test_provenance.py",
+      "?? tests/test_risk_gate_adversarial.py",
+      "?? tests/test_tool_contract.py"
+    ]
+  },
+  "environment": {
+    "python": "3.14.4",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "packages": {
+      "pandas": "3.0.3",
+      "numpy": "2.5.1"
+    }
+  },
+  "data": {
+    "path": "~/.llmfin\\market_historical.db",
+    "exists": true,
+    "size_bytes": 621383680,
+    "rows": 4579629,
+    "date_min": "2010-01-04",
+    "date_max": "2021-12-27",
+    "distinct_symbols": 2765,
+    "sha256": "dcfe95f2ee3aefa59cc700b5d467dc0ec560f0fc447314f1ea39210d5f6a9b54"
+  },
+  "config": {
+    "prereg": "artifacts/prereg_multiple_testing.md",
+    "q": 0.1
+  },
+  "result": {
+    "bh_wide": {
+      "q": 0.1,
+      "n_tests": 11,
+      "n_survivors": 3,
+      "survivors": [
+        "neg_skew",
+        "momentum_12_1",
+        "high_52w"
+      ],
+      "ranked": [
+        {
+          "name": "neg_skew",
+          "p": 0.0,
+          "bh_threshold": 0.0091,
+          "survives": true
+        },
+        {
+          "name": "momentum_12_1",
+          "p": 0.0114,
+          "bh_threshold": 0.0182,
+          "survives": true
+        },
+        {
+          "name": "high_52w",
+          "p": 0.0143,
+          "bh_threshold": 0.0273,
+          "survives": true
+        },
+        {
+          "name": "short_term_reversal",
+          "p": 0.0561,
+          "bh_threshold": 0.0364,
+          "survives": false
+        },
+        {
+          "name": "long_term_reversal",
+          "p": 0.1443,
+          "bh_threshold": 0.0455,
+          "survives": false
+        },
+        {
+          "name": "low_volatility",
+          "p": 0.2263,
+          "bh_threshold": 0.0545,
+          "survives": false
+        },
+        {
+          "name": "volume_shock",
+          "p": 0.332,
+          "bh_threshold": 0.0636,
+          "survives": false
+        },
+        {
+          "name": "low_turnover",
+          "p": 0.3576,
+          "bh_threshold": 0.0727,
+          "survives": false
+        },
+        {
+          "name": "max_effect",
+          "p": 0.6892,
+          "bh_threshold": 0.0818,
+          "survives": false
+        },
+        {
+          "name": "low_beta",
+          "p": 0.8966,
+          "bh_threshold": 0.0909,
+          "survives": false
+        },
+        {
+          "name": "illiquidity",
+          "p": 0.9045,
+          "bh_threshold": 0.1,
+          "survives": false
+        }
+      ]
+    },
+    "bh_all_cells": {
+      "q": 0.1,
+      "n_tests": 33,
+      "n_survivors": 2,
+      "survivors": [
+        "wide:neg_skew",
+        "mid:neg_skew"
+      ],
+      "ranked": [
+        {
+          "name": "wide:neg_skew",
+          "p": 0.0,
+          "bh_threshold": 0.003,
+          "survives": true
+        },
+        {
+          "name": "mid:neg_skew",
+          "p": 0.0,
+          "bh_threshold": 0.0061,
+          "survives": true
+        },
+        {
+          "name": "wide:momentum_12_1",
+          "p": 0.0114,
+          "bh_threshold": 0.0091,
+          "survives": false
+        },
+        {
+          "name": "wide:high_52w",
+          "p": 0.0143,
+          "bh_threshold": 0.0121,
+          "survives": false
+        },
+        {
+          "name": "liquid:neg_skew",
+          "p": 0.0183,
+          "bh_threshold": 0.0152,
+          "survives": false
+        },
+        {
+          "name": "liquid:low_turnover",
+          "p": 0.0349,
+          "bh_threshold": 0.0182,
+          "survives": false
+        },
+        {
+          "name": "wide:short_term_reversal",
+          "p": 0.0561,
+          "bh_threshold": 0.0212,
+          "survives": false
+        },
+        {
+          "name": "wide:long_term_reversal",
+          "p": 0.1443,
+          "bh_threshold": 0.0242,
+          "survives": false
+        },
+        {
+          "name": "mid:momentum_12_1",
+          "p": 0.1499,
+          "bh_threshold": 0.0273,
+          "survives": false
+        },
+        {
+          "name": "mid:high_52w",
+          "p": 0.1676,
+          "bh_threshold": 0.0303,
+          "survives": false
+        },
+        {
+          "name": "wide:low_volatility",
+          "p": 0.2263,
+          "bh_threshold": 0.0333,
+          "survives": false
+        },
+        {
+          "name": "liquid:momentum_12_1",
+          "p": 0.2713,
+          "bh_threshold": 0.0364,
+          "survives": false
+        },
+        {
+          "name": "mid:long_term_reversal",
+          "p": 0.3125,
+          "bh_threshold": 0.0394,
+          "survives": false
+        },
+        {
+          "name": "wide:volume_shock",
+          "p": 0.332,
+          "bh_threshold": 0.0424,
+          "survives": false
+        },
+        {
+          "name": "mid:short_term_reversal",
+          "p": 0.332,
+          "bh_threshold": 0.0455,
+          "survives": false
+        },
+        {
+          "name": "mid:low_turnover",
+          "p": 0.3472,
+          "bh_threshold": 0.0485,
+          "survives": false
+        },
+        {
+          "name": "wide:low_turnover",
+          "p": 0.3576,
+          "bh_threshold": 0.0515,
+          "survives": false
+        },
+        {
+          "name": "mid:volume_shock",
+          "p": 0.3681,
+          "bh_threshold": 0.0545,
+          "survives": false
+        },
+        {
+          "name": "liquid:long_term_reversal",
+          "p": 0.4777,
+          "bh_threshold": 0.0576,
+          "survives": false
+        },
+        {
+          "name": "liquid:short_term_reversal",
+          "p": 0.5552,
+          "bh_threshold": 0.0606,
+          "survives": false
+        },
+        {
+          "name": "mid:max_effect",
+          "p": 0.6384,
+          "bh_threshold": 0.0636,
+          "survives": false
+        },
+        {
+          "name": "liquid:high_52w",
+          "p": 0.6455,
+          "bh_threshold": 0.0667,
+          "survives": false
+        },
+        {
+          "name": "liquid:low_volatility",
+          "p": 0.6599,
+          "bh_threshold": 0.0697,
+          "survives": false
+        },
+        {
+          "name": "wide:max_effect",
+          "p": 0.6892,
+          "bh_threshold": 0.0727,
+          "survives": false
+        },
+        {
+          "name": "liquid:volume_shock",
+          "p": 0.7566,
+          "bh_threshold": 0.0758,
+          "survives": false
+        },
+        {
+          "name": "mid:low_volatility",
+          "p": 0.7872,
+          "bh_threshold": 0.0788,
+          "survives": false
+        },
+        {
+          "name": "mid:illiquidity",
+          "p": 0.8493,
+          "bh_threshold": 0.0818,
+          "survives": false
+        },
+        {
+          "name": "liquid:illiquidity",
+          "p": 0.8493,
+          "bh_threshold": 0.0848,
+          "survives": false
+        },
+        {
+          "name": "wide:low_beta",
+          "p": 0.8966,
+          "bh_threshold": 0.0879,
+          "survives": false
+        },
+        {
+          "name": "liquid:low_beta",
+          "p": 0.8966,
+          "bh_threshold": 0.0909,
+          "survives": false
+        },
+        {
+          "name": "wide:illiquidity",
+          "p": 0.9045,
+          "bh_threshold": 0.0939,
+          "survives": false
+        },
+        {
+          "name": "mid:low_beta",
+          "p": 0.9442,
+          "bh_threshold": 0.097,
+          "survives": false
+        },
+        {
+          "name": "liquid:max_effect",
+          "p": 0.9522,
+          "bh_threshold": 0.1,
+          "survives": false
+        }
+      ]
+    },
+    "bootstrap_max_t": {
+      "observed_max_abs_t": 2.787,
+      "null_max_mean": 1.917,
+      "null_max_p95": 2.887,
+      "p_value": 0.073,
+      "n_iter": 1000,
+      "n_chars": 11
+    },
+    "gross_t": {
+      "wide:short_term_reversal": -1.15,
+      "wide:momentum_12_1": 2.79,
+      "wide:long_term_reversal": -1.21,
+      "wide:high_52w": 2.73,
+      "wide:low_volatility": 1.72,
+      "wide:max_effect": 1.16,
+      "wide:illiquidity": 0.18,
+      "wide:low_turnover": 1.38,
+      "wide:low_beta": 0.01,
+      "wide:neg_skew": -2.68,
+      "wide:volume_shock": -0.16,
+      "mid:short_term_reversal": -0.21,
+      "mid:momentum_12_1": 1.7,
+      "mid:long_term_reversal": -0.76,
+      "mid:high_52w": 1.7,
+      "mid:low_volatility": 0.75,
+      "mid:max_effect": 0.28,
+      "mid:illiquidity": 0.54,
+      "mid:low_turnover": 1.35,
+      "mid:low_beta": 0.07,
+      "mid:neg_skew": -2.96,
+      "mid:volume_shock": -0.13,
+      "liquid:short_term_reversal": 0.07,
+      "liquid:momentum_12_1": 1.39,
+      "liquid:long_term_reversal": -0.49,
+      "liquid:high_52w": 0.77,
+      "liquid:low_volatility": 0.89,
+      "liquid:max_effect": 0.75,
+      "liquid:illiquidity": 0.52,
+      "liquid:low_turnover": 2.59,
+      "liquid:low_beta": 0.0,
+      "liquid:neg_skew": -1.36,
+      "liquid:volume_shock": 0.35
+    }
+  }
+}

@@ -2,7 +2,7 @@
 server.py
 ─────────
 llmfin MCP server — the trading intelligence layer, exposed to any MCP client
-(Claude Desktop, Claude Code, Cursor, …) over stdio.
+(Cursor-style MCP clients, …) over stdio.
 
 Tool map (15 tools, 4 layers)
 ─────────────────────────────
@@ -25,6 +25,8 @@ Tool map (15 tools, 4 layers)
     search_instruments      symbol → instrument_token (disk-cached daily)
     get_portfolio_positions current positions
     place_order             risk-gated order placement (mandate + kill switch)
+    get_risk_status         active mandate, kill-switch state, orders and
+                             rupees committed today (free — no session needed)
 
 The risk gate on place_order is enforced server-side (see risk.py) — there is
 no flag an LLM can set to bypass it.
@@ -121,7 +123,7 @@ async def scan_accumulation(
     """Deterministically screen for quiet long-side accumulation candidates —
     the opposite of scan_market.
 
-    scan_market finds explosions, and the backtest evidence (CLAUDE.md §6)
+    scan_market finds explosions, and the backtest evidence (README.md)
     says explosions have no long edge: chasing them loses in every
     configuration tested across 11 years of NSE history. This screen looks
     instead for the quiet phase a long strategy actually needs: volume
@@ -143,9 +145,24 @@ async def scan_accumulation(
             limit=limit,
         )
     )
-    if not hits:
-        return _json({"hits": [], "note": "No symbols passed the filters — try loosening them."})
-    return _json([asdict(h) for h in hits])
+    # The UNVALIDATED status travels in the PAYLOAD, not only the docstring.
+    # A caller that reads the returned data rather than the tool description
+    # would otherwise see a clean list of stock picks indistinguishable from
+    # scan_market's backtested output — the same failure mode this project
+    # documents elsewhere: a capability asserted in prose that the data does
+    # not carry, which an LLM will confabulate over rather than report.
+    return _json({
+        "validation": "UNVALIDATED",
+        "warning": (
+            "This screen has NOT been through the point-in-time backtest loop. "
+            "There is no evidence of a long-side edge — no win rate, no alpha, "
+            "no sample size. Unlike scan_market's fade result (README.md), "
+            "nothing here is backtested. Present these as research candidates "
+            "only, and state the absence of a track record if asked."
+        ),
+        "hits": [asdict(h) for h in hits],
+        "note": None if hits else "No symbols passed the filters — try loosening them.",
+    })
 
 
 @mcp.tool()
@@ -394,15 +411,21 @@ async def place_order(
         return _json({"error": _NO_SESSION_MSG})
 
     def _run() -> dict:
-        # Estimate order value for the mandate check: limit price if given,
-        # else live LTP.
-        est_price = price
-        if est_price is None:
+        # Estimate order value for the mandate check. A caller-supplied `price`
+        # is only a real ceiling on the fill for a BUY LIMIT/SL — a MARKET or
+        # SL-M order ignores it, and a SELL fills at the market no matter how
+        # low the limit is. Anywhere else we must use a live quote, because
+        # `price` is an unverified number chosen by the model.
+        est_price: Optional[float] = None
+        est_price_source = "unavailable"
+        if price is not None and transaction_type == "BUY" and order_type in risk_mod.PRICE_BINDING_ORDER_TYPES:
+            est_price, est_price_source = price, "limit_price"
+        else:
             try:
                 q = kite.ltp([f"{exchange}:{tradingsymbol}"])
-                est_price = list(q.values())[0]["last_price"]
+                est_price, est_price_source = list(q.values())[0]["last_price"], "market"
             except Exception:
-                est_price = None
+                est_price, est_price_source = None, "unavailable"
 
         verdict = risk_mod.check_order(
             symbol=tradingsymbol,
@@ -411,6 +434,8 @@ async def place_order(
             exchange=exchange,
             product=product,
             est_price=est_price,
+            order_type=order_type,
+            est_price_source=est_price_source,
         )
         if not verdict.allowed:
             return {"status": "REJECTED_BY_RISK_GATE", **verdict.to_dict()}
@@ -457,6 +482,7 @@ async def get_risk_status() -> str:
             "mandate": risk_mod.load_mandate(),
             "kill_switch_active_at": risk_mod.kill_switch_active(),
             "orders_placed_today": risk_mod.orders_placed_today(),
+            "order_value_committed_today_inr": risk_mod.order_value_today(),
             "note": (
                 "Edit risk_limits.json yourself to change limits — the LLM "
                 "cannot. Touch a KILL_SWITCH file to freeze all trading."
@@ -478,7 +504,7 @@ def main() -> None:
         "--http",
         action="store_true",
         help="Serve over streamable HTTP at http://127.0.0.1:<port>/mcp "
-        "(for Claude Desktop custom connectors) instead of stdio",
+        "(for desktop MCP client connectors) instead of stdio",
     )
     parser.add_argument("--port", type=int, default=8747)
     args = parser.parse_args()

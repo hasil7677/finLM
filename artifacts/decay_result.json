@@ -1,0 +1,131 @@
+{
+  "per_year": [
+    {
+      "year": 2010,
+      "alpha": 2.27,
+      "trades": 769
+    },
+    {
+      "year": 2011,
+      "alpha": 3.52,
+      "trades": 355
+    },
+    {
+      "year": 2012,
+      "alpha": 2.49,
+      "trades": 757
+    },
+    {
+      "year": 2013,
+      "alpha": 1.9,
+      "trades": 533
+    },
+    {
+      "year": 2014,
+      "alpha": 2.15,
+      "trades": 1034
+    },
+    {
+      "year": 2015,
+      "alpha": 2.07,
+      "trades": 853
+    },
+    {
+      "year": 2016,
+      "alpha": 1.87,
+      "trades": 866
+    },
+    {
+      "year": 2017,
+      "alpha": 1.27,
+      "trades": 1227
+    },
+    {
+      "year": 2018,
+      "alpha": 3.01,
+      "trades": 522
+    },
+    {
+      "year": 2019,
+      "alpha": 2.54,
+      "trades": 465
+    },
+    {
+      "year": 2020,
+      "alpha": 2.39,
+      "trades": 1024
+    },
+    {
+      "year": 2021,
+      "alpha": 1.13,
+      "trades": 1390
+    },
+    {
+      "year": 2022,
+      "alpha": 1.41,
+      "trades": 1026
+    },
+    {
+      "year": 2023,
+      "alpha": 0.35,
+      "trades": 1288
+    },
+    {
+      "year": 2024,
+      "alpha": 1.23,
+      "trades": 1143
+    },
+    {
+      "year": 2025,
+      "alpha": 0.79,
+      "trades": 745
+    },
+    {
+      "year": 2026,
+      "alpha": 1.56,
+      "trades": 531
+    }
+  ],
+  "with_2020": {
+    "n": 16,
+    "spearman_r": -0.653,
+    "spearman_p": 0.0013,
+    "ols_slope": -0.1202,
+    "loo_all_negative": true,
+    "break_split_year": 2023,
+    "break_delta": 1.365,
+    "break_p": 0.0375,
+    "break_near_event": [
+      2022,
+      2023
+    ],
+    "h1": true,
+    "h2": true,
+    "h3": false,
+    "verdict": "H1 monotonic decay"
+  },
+  "without_2020": {
+    "n": 15,
+    "spearman_r": -0.707,
+    "spearman_p": 0.0003,
+    "ols_slope": -0.1265,
+    "loo_all_negative": true,
+    "break_split_year": 2023,
+    "break_delta": 1.346,
+    "break_p": 0.0503,
+    "break_near_event": [
+      2022,
+      2023
+    ],
+    "h1": true,
+    "h2": false,
+    "h3": false,
+    "verdict": "H1 monotonic decay"
+  },
+  "final_verdict": "H1 monotonic decay",
+  "sign_test": {
+    "k": 16,
+    "n": 16,
+    "p": 1.52587890625e-05
+  }
+}

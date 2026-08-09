@@ -35,6 +35,7 @@ from __future__ import annotations
 import argparse
 import json
 import sqlite3
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
@@ -45,6 +46,7 @@ import pandas as pd
 from llmfin.corporate_actions import adjust_corporate_actions
 from llmfin.data_store import DB_PATH
 from llmfin.indicators import compute_indicators
+from llmfin.provenance import write_artifact
 from llmfin.signals import run_models
 
 MIN_LOOKBACK = 60
@@ -72,7 +74,7 @@ class ExitConfig:
     pullback_atr: float = 0.5       # limit = scan close -/+ pullback_atr*ATR
     pullback_wait: int = 3          # days to wait for the fill
     cost_pct: float = 0.4           # round-trip cost (brokerage + STT + slippage), see
-                                     # CLAUDE.md §7 -- subtracted from every trade's pnl
+                                     # README.md §7 -- subtracted from every trade's pnl
                                      # so pnl_pct/alpha_pct are what a trade would actually
                                      # keep, not a mental haircut applied after the fact
 
@@ -377,6 +379,15 @@ def main() -> None:
         scan_cfg=scan_cfg,
     )
     print(json.dumps(result, indent=2))
+    # Always stamped, never optional -- see provenance.py for why. Cite the
+    # artifact path in docs; do not transcribe numbers out of this output.
+    artifact = write_artifact(
+        kind="backtest",
+        config=result.get("config", {}),
+        result={k: v for k, v in result.items() if k != "config"},
+        db_path=Path(a.db),
+    )
+    print(f"\nartifact: {artifact}", file=sys.stderr)
 
 
 if __name__ == "__main__":

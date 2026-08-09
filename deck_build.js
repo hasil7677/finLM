@@ -71,7 +71,7 @@ function kicker(s, text, dark) {
     color: ICE, margin: 0,
   });
   s.addText(
-    "Enforced mandates · kill switch · reasoning audit trail · automated outcome scoring.\nProven by governing a real financial agent against live markets.",
+    "Enforced mandates · kill switch · reasoning audit trail · automated outcome scoring.\nDemonstrated on a market-analysis agent scored against real NSE prices. Paper decisions only — no order was ever placed.",
     { x: M, y: 4.15, w: 8.6, h: 1.0, fontFace: B, fontSize: 15,
       color: ICE, lineSpacing: 24, margin: 0 }
   );
@@ -87,7 +87,7 @@ function kicker(s, text, dark) {
     x: M, y: 6.45, w: 6, h: 0.3, fontFace: B, fontSize: 12,
     color: "7E93B8", margin: 0,
   });
-  s.addNotes("finLM is a governance layer for financial agents. Everyone is shipping agents that can move money. Nobody is shipping the layer that makes them safe to deploy and auditable afterwards. We built that layer, and we proved it by putting a real financial agent inside it.");
+  s.addNotes("finLM is a governance layer for financial agents. Everyone is shipping agents that can move money. Nobody is shipping the layer that makes them safe to deploy and auditable afterwards. We built that layer and put a market-analysis agent inside it, scored against real NSE closing prices. Be first to say this: the decisions are paper decisions. No order was ever placed, because the mandate file authorising one was never written — the gate refused every time. That is the design demonstrating itself.");
 }
 
 // ============================================================
@@ -300,7 +300,7 @@ function kicker(s, text, dark) {
   title(s, "One layer between any LLM and the system of record", false);
 
   const boxes = [
-    [M, "Any LLM client", "Claude · GPT · Gemini\nvia Model Context Protocol", CARD, INK, SLATE],
+    [M, "Any LLM client", "Any MCP client\nvia Model Context Protocol", CARD, INK, SLATE],
     [4.85, "finLM governance layer", "13 MCP tools\nmandate gate · journal · scorer", INK, LIGHT, ICE],
     [9.15, "System of record", "Brokerage, card platform,\nservicing system", CARD, INK, SLATE],
   ];
@@ -375,30 +375,30 @@ function kicker(s, text, dark) {
   title(s, "Validation killed the intuitive policy before money moved", false);
 
   const stats = [
-    ["2,758", "historical decision events replayed point-in-time", INK],
-    ["-1.3%", "per trade: the intuitive 'chase momentum' policy, negative in every configuration", CORAL],
-    ["+1.2%", "per trade: the validated policy, benchmark-adjusted, held up out-of-sample", MINT],
+    ["11/11", "years 2010-2020 with positive net-of-cost alpha, 8,405 trades — sign test p = 0.0005", INK],
+    ["-1.55%", "per trade: the intuitive 'chase momentum' policy, net of costs — negative in every configuration", CORAL],
+    ["+2.32%", "per trade: the validated fade policy, benchmark-adjusted, net of costs", MINT],
   ];
   stats.forEach((st, i) => {
     const y = 1.95 + i * 1.35;
     s.addText(st[0], {
-      x: M, y, w: 2.1, h: 0.8, fontFace: H, fontSize: 40, bold: true,
+      x: M, y, w: 2.3, h: 0.8, fontFace: H, fontSize: 36, bold: true,
       color: st[2], margin: 0,
     });
     s.addText(st[1], {
-      x: M + 2.2, y: y + 0.1, w: 3.3, h: 0.9, fontFace: B, fontSize: 12.5,
+      x: M + 2.35, y: y + 0.1, w: 3.15, h: 0.9, fontFace: B, fontSize: 12.5,
       color: SLATE, lineSpacing: 17, margin: 0,
     });
   });
 
-  s.addText("Monthly benchmark-adjusted return of the validated policy (%)", {
+  s.addText("Live window: monthly benchmark-adjusted return, net of costs (%)", {
     x: 6.5, y: 1.95, w: 6.2, h: 0.3, fontFace: B, fontSize: 12, bold: true,
     color: INK, margin: 0,
   });
   s.addChart(pres.ChartType.bar, [{
     name: "Alpha per trade",
     labels: ["Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul"],
-    values: [-1.37, -0.36, 0.72, 1.10, 0.00, 4.32, 0.83, 1.93, 1.46, 2.03, 1.12, 1.75],
+    values: [-2.46, -0.74, 0.63, 1.24, -0.68, 1.12, -0.25, 1.57, 1.23, 1.68, 0.49, 1.28],
   }], {
     x: 6.4, y: 2.3, w: 6.3, h: 3.0,
     barDir: "col", chartColors: [MINT],
@@ -409,7 +409,7 @@ function kicker(s, text, dark) {
     catGridLine: { style: "none" },
     barGapWidthPct: 45,
   });
-  s.addText("Positive in 10 of 12 months · 935 trades · profit factor 1.18 · improved on held-out data (1.14 → 1.27)", {
+  s.addText("Live 14 months: +0.58%/trade net · PF 1.02 · positive in 8 of 12 · short-side, so for a cash account this is a de-risking filter", {
     x: 6.4, y: 5.35, w: 6.3, h: 0.5, fontFace: B, fontSize: 11.5,
     color: SLATE, lineSpacing: 16, margin: 0,
   });
@@ -426,7 +426,7 @@ function kicker(s, text, dark) {
     x: M + 0.3, y: 6.05, w: 4.9, h: 0.85, fontFace: B, fontSize: 13,
     valign: "middle", margin: 0,
   });
-  s.addNotes("We did not just describe a governance layer. We built one and put a real financial agent inside it. Pre-deployment validation showed the intuitive strategy loses in every configuration, and validated the counterintuitive one. Live, the top decision returned 10.31 percent against a falling market.");
+  s.addNotes("We did not just describe a governance layer. We built one and put a market-analysis agent inside it. Pre-deployment validation showed the intuitive strategy loses in every configuration, and validated the counterintuitive one. The top paper decision returned 10.31 percent against a falling market. Say the disclosure out loud before anyone asks: these are paper decisions scored against real closing prices. No order was ever placed, because the mandate file authorising one was never written — the gate refused every time. That is the thesis demonstrating itself, not a missing feature.");
 }
 
 // ============================================================
@@ -480,15 +480,29 @@ function kicker(s, text, dark) {
     valign: "middle", margin: 0,
   });
 
-  s.addText("A dated, reviewable reversal instead of a forgotten assumption.\nThat is what governance is for.", {
-    x: M, y: 5.25, w: 11.9, h: 1.0, fontFace: H, fontSize: 24, bold: true,
-    color: LIGHT, lineSpacing: 34, margin: 0,
+  s.addText("AND IT KEPT HAPPENING — THREE TIMES, ESCALATING", {
+    x: M, y: 5.2, w: 11.9, h: 0.3, fontFace: B, fontSize: 11, bold: true,
+    charSpacing: 2, color: MINT, margin: 0,
   });
-  s.addText("Most AI agent projects cannot tell you whether they were right. This one keeps receipts — including the unflattering ones.", {
-    x: M, y: 6.4, w: 11.9, h: 0.5, fontFace: B, fontSize: 13.5,
-    color: ICE, margin: 0,
+  const escalation = [
+    ["Caught after the fact — ", "the catalyst veto above. The scorer contradicted it three days later."],
+    ["Caught by audit — ", "a headline backtest figure would not reproduce. Every run is now stamped so it cannot recur."],
+    ["Caught in advance — ", "a regime hypothesis pre-registered with its falsification region, then falsified by the data."],
+  ];
+  escalation.forEach((line, i) => {
+    s.addText([
+      { text: line[0], options: { bold: true, color: LIGHT } },
+      { text: line[1], options: { color: ICE } },
+    ], {
+      x: M, y: 5.55 + i * 0.42, w: 11.9, h: 0.4, fontFace: B, fontSize: 12.5,
+      lineSpacing: 16, margin: 0,
+    });
   });
-  s.addNotes("This is the slide that matters. The agent recorded a hypothesis, acted on it, and the scorer proved it wrong three days later. Be first to say the sample size out loud: five decisions over one week, nowhere near statistically valid. The claim is not that the finding is conclusive — it is that the loop surfaced it automatically, dated and reviewable, without a human going looking. No other agent framework produces that artifact.");
+  s.addText("A forgotten assumption becomes a dated, reviewable record. That is what governance is for.", {
+    x: M, y: 6.85, w: 11.9, h: 0.45, fontFace: H, fontSize: 15, bold: true,
+    color: LIGHT, margin: 0,
+  });
+  s.addNotes("This is the slide that matters. The agent recorded a hypothesis, acted on it, and the scorer proved it wrong three days later. Be first to say the sample size out loud: five decisions over one week, nowhere near statistically valid. The claim is not that the finding is conclusive — it is that the loop surfaced it automatically, dated and reviewable, without a human going looking. Then land the escalation: the same discipline caught a backtest number that would not reproduce (fixed with a provenance layer), and finally caught a regime hypothesis we had pre-registered — prediction interval and falsification region written down BEFORE the data was computed, and the observation landed outside it. The third one is the punchline: anyone can explain a result after the fact; almost nobody sets up a test they can lose. Artifacts for all three are in artifacts/ and cited in the README.");
 }
 
 // ============================================================
@@ -544,7 +558,7 @@ function kicker(s, text, dark) {
   title(s, "Built and running, not proposed", false);
 
   const done = [
-    "13 MCP tools live and verified over the protocol, in Claude Desktop and Claude Code",
+    "15 MCP tools live and verified over the protocol, across desktop and CLI MCP clients",
     "Mandate gate and kill switch enforced server-side — tested, and they fail closed",
     "14 months of market history ingested; simulator reproducible from the repo",
     "Journal actively scoring live decisions with full reasoning retained",

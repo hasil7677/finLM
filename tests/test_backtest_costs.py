@@ -1,6 +1,6 @@
 """Tests for explicit transaction-cost modeling in backtest.simulate()/stats()
 (ExitConfig.cost_pct) -- replaces the "mental haircut" previously applied by
-hand when reading backtest output (see CLAUDE.md §7)."""
+hand when reading backtest output (see README.md §7)."""
 
 from __future__ import annotations
 

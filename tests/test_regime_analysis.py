@@ -2,7 +2,7 @@
 SQL slicing (memory-bounded alternative to loading the full multi-year DB
 at once) and the realized-vol/breadth computation. The full
 yearly_fade_alpha_vs_regime() pipeline is exercised end-to-end against real
-history manually (see CLAUDE.md) rather than in the test suite, since a
+history manually (see README.md) rather than in the test suite, since a
 meaningful run needs years of realistic multi-symbol data.
 """
 

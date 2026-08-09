@@ -1,0 +1,178 @@
+{
+  "years": [
+    {
+      "year": 2010,
+      "fade_trades": 769,
+      "fade_avg_alpha_pct": 2.27,
+      "fade_win_rate_pct": 53.4,
+      "realized_vol_annualized_pct": 18.25,
+      "breadth_pct": 51.56,
+      "liquid_universe_rows": 100564
+    },
+    {
+      "year": 2011,
+      "fade_trades": 355,
+      "fade_avg_alpha_pct": 3.52,
+      "fade_win_rate_pct": 67.3,
+      "realized_vol_annualized_pct": 19.76,
+      "breadth_pct": 48.16,
+      "liquid_universe_rows": 72805
+    },
+    {
+      "year": 2012,
+      "fade_trades": 757,
+      "fade_avg_alpha_pct": 2.49,
+      "fade_win_rate_pct": 51.1,
+      "realized_vol_annualized_pct": 14.55,
+      "breadth_pct": 52.87,
+      "liquid_universe_rows": 68340
+    },
+    {
+      "year": 2013,
+      "fade_trades": 533,
+      "fade_avg_alpha_pct": 1.9,
+      "fade_win_rate_pct": 54.2,
+      "realized_vol_annualized_pct": 16.76,
+      "breadth_pct": 50.31,
+      "liquid_universe_rows": 59005
+    },
+    {
+      "year": 2014,
+      "fade_trades": 1034,
+      "fade_avg_alpha_pct": 2.15,
+      "fade_win_rate_pct": 46.7,
+      "realized_vol_annualized_pct": 17.34,
+      "breadth_pct": 53.66,
+      "liquid_universe_rows": 91000
+    },
+    {
+      "year": 2015,
+      "fade_trades": 853,
+      "fade_avg_alpha_pct": 2.07,
+      "fade_win_rate_pct": 53.7,
+      "realized_vol_annualized_pct": 19.95,
+      "breadth_pct": 51.07,
+      "liquid_universe_rows": 104344
+    },
+    {
+      "year": 2016,
+      "fade_trades": 866,
+      "fade_avg_alpha_pct": 1.87,
+      "fade_win_rate_pct": 52.0,
+      "realized_vol_annualized_pct": 20.18,
+      "breadth_pct": 50.85,
+      "liquid_universe_rows": 108674
+    },
+    {
+      "year": 2017,
+      "fade_trades": 1227,
+      "fade_avg_alpha_pct": 1.27,
+      "fade_win_rate_pct": 48.7,
+      "realized_vol_annualized_pct": 13.38,
+      "breadth_pct": 52.14,
+      "liquid_universe_rows": 146785
+    },
+    {
+      "year": 2018,
+      "fade_trades": 522,
+      "fade_avg_alpha_pct": 3.01,
+      "fade_win_rate_pct": 64.2,
+      "realized_vol_annualized_pct": 18.58,
+      "breadth_pct": 47.62,
+      "liquid_universe_rows": 137899
+    },
+    {
+      "year": 2019,
+      "fade_trades": 465,
+      "fade_avg_alpha_pct": 2.54,
+      "fade_win_rate_pct": 58.3,
+      "realized_vol_annualized_pct": 15.52,
+      "breadth_pct": 48.96,
+      "liquid_universe_rows": 106949
+    },
+    {
+      "year": 2020,
+      "fade_trades": 1024,
+      "fade_avg_alpha_pct": 2.39,
+      "fade_win_rate_pct": 49.8,
+      "realized_vol_annualized_pct": 28.19,
+      "breadth_pct": 51.36,
+      "liquid_universe_rows": 124622
+    },
+    {
+      "year": 2021,
+      "fade_trades": 1390,
+      "fade_avg_alpha_pct": 1.13,
+      "fade_win_rate_pct": 48.4,
+      "realized_vol_annualized_pct": 17.48,
+      "breadth_pct": 50.1,
+      "liquid_universe_rows": 196208
+    },
+    {
+      "year": 2022,
+      "fade_trades": 1026,
+      "fade_avg_alpha_pct": 1.41,
+      "fade_win_rate_pct": 53.1,
+      "realized_vol_annualized_pct": 20.55,
+      "breadth_pct": 49.0,
+      "liquid_universe_rows": 212705
+    },
+    {
+      "year": 2023,
+      "fade_trades": 1288,
+      "fade_avg_alpha_pct": 0.35,
+      "fade_win_rate_pct": 43.3,
+      "realized_vol_annualized_pct": 12.5,
+      "breadth_pct": 50.51,
+      "liquid_universe_rows": 239933
+    },
+    {
+      "year": 2024,
+      "fade_trades": 1143,
+      "fade_avg_alpha_pct": 1.23,
+      "fade_win_rate_pct": 55.1,
+      "realized_vol_annualized_pct": 19.65,
+      "breadth_pct": 48.84,
+      "liquid_universe_rows": 304529
+    },
+    {
+      "year": 2025,
+      "fade_trades": 745,
+      "fade_avg_alpha_pct": 0.79,
+      "fade_win_rate_pct": 53.6,
+      "realized_vol_annualized_pct": 19.48,
+      "breadth_pct": 47.95,
+      "liquid_universe_rows": 302923
+    },
+    {
+      "year": 2026,
+      "fade_trades": 531,
+      "fade_avg_alpha_pct": 1.56,
+      "fade_win_rate_pct": 53.3,
+      "realized_vol_annualized_pct": 21.33,
+      "breadth_pct": 49.36,
+      "liquid_universe_rows": 191897
+    }
+  ],
+  "n_years_with_data": 17,
+  "corr_fade_alpha_vs_realized_vol": 0.256,
+  "corr_fade_alpha_vs_breadth": -0.029,
+  "config": {
+    "exit": {
+      "horizon": 10,
+      "stop_mult": 2.0,
+      "target_mult": 2.5,
+      "entry_style": "pullback",
+      "pullback_atr": 0.5,
+      "pullback_wait": 3,
+      "cost_pct": 0.4
+    },
+    "scan": {
+      "min_price": 20.0,
+      "min_avg_volume": 200000,
+      "min_turnover": 30000000.0,
+      "min_volume_ratio": 1.5,
+      "min_abs_change": 1.0
+    }
+  }
+}

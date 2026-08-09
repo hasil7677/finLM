@@ -1,0 +1,375 @@
+{
+  "kind": "anomaly_conditional",
+  "created_utc": "2026-08-09T08:12:49+00:00",
+  "git": {
+    "sha": "c5a838c6efa45a2cba02f5d833a41ed973141803",
+    "dirty": true,
+    "dirty_files": [
+      "M CLAUDE.md",
+      " M README.md",
+      " M SUBMISSION.md",
+      " M deck_build.js",
+      " M finLM_CodeStreet2026.pptx",
+      " M risk_limits.example.json",
+      " M src/llmfin/backtest.py",
+      " M src/llmfin/risk.py",
+      " M src/llmfin/server.py",
+      "?? artifacts/",
+      "?? src/llmfin/anomalies.py",
+      "?? src/llmfin/provenance.py",
+      "?? tests/test_anomalies.py",
+      "?? tests/test_provenance.py",
+      "?? tests/test_risk_gate_adversarial.py",
+      "?? tests/test_tool_contract.py"
+    ]
+  },
+  "environment": {
+    "python": "3.14.4",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "packages": {
+      "pandas": "3.0.3",
+      "numpy": "2.5.1"
+    }
+  },
+  "data": {
+    "path": "~/.llmfin\\market_historical.db",
+    "exists": true,
+    "size_bytes": 562790400,
+    "rows": 4151058,
+    "date_min": "2010-01-04",
+    "date_max": "2020-12-31",
+    "distinct_symbols": 2543,
+    "sha256": "71d5ee7b3271b59920cba886b0a52c3c5f6d1ae62d931df633756d1f2636beaf"
+  },
+  "config": {
+    "universe": "wide 1cr/20rs/100k",
+    "control": "avg_turnover",
+    "n_control": 3
+  },
+  "result": {
+    "momentum_12_1": {
+      "uncond": {
+        "months": 118,
+        "mean_gross_pct_pm": 1.194,
+        "mean_net_pct_pm": 1.066,
+        "ann_net_pct": 12.79,
+        "t_stat_gross_nw": 2.28,
+        "t_stat_net_nw": 2.04,
+        "sharpe_net": 0.63,
+        "pct_months_positive": 66.1,
+        "avg_turnover": 0.32,
+        "long_only_ann_net_pct": 13.28,
+        "avg_names": 445
+      },
+      "cond_turnover": {
+        "months": 118,
+        "mean_gross_pct_pm": 1.085,
+        "mean_net_pct_pm": 0.685,
+        "ann_net_pct": 8.22,
+        "t_stat_gross_nw": 2.14,
+        "t_stat_net_nw": 1.35,
+        "sharpe_net": 0.42,
+        "pct_months_positive": 61.9,
+        "avg_turnover": 1.0,
+        "long_only_ann_net_pct": 11.98,
+        "avg_names": 445
+      },
+      "early": {
+        "months": 59,
+        "mean_gross_pct_pm": 1.271,
+        "mean_net_pct_pm": 1.138,
+        "ann_net_pct": 13.66,
+        "t_stat_gross_nw": 1.49,
+        "t_stat_net_nw": 1.33,
+        "sharpe_net": 0.61,
+        "pct_months_positive": 64.4,
+        "avg_turnover": 0.33,
+        "long_only_ann_net_pct": 14.39,
+        "avg_names": 377
+      },
+      "late": {
+        "months": 59,
+        "mean_gross_pct_pm": 1.118,
+        "mean_net_pct_pm": 0.994,
+        "ann_net_pct": 11.92,
+        "t_stat_gross_nw": 1.83,
+        "t_stat_net_nw": 1.63,
+        "sharpe_net": 0.66,
+        "pct_months_positive": 67.8,
+        "avg_turnover": 0.31,
+        "long_only_ann_net_pct": 12.16,
+        "avg_names": 512
+      }
+    },
+    "high_52w": {
+      "uncond": {
+        "months": 118,
+        "mean_gross_pct_pm": 1.598,
+        "mean_net_pct_pm": 1.438,
+        "ann_net_pct": 17.26,
+        "t_stat_gross_nw": 2.57,
+        "t_stat_net_nw": 2.31,
+        "sharpe_net": 0.69,
+        "pct_months_positive": 63.6,
+        "avg_turnover": 0.4,
+        "long_only_ann_net_pct": 16.8,
+        "avg_names": 445
+      },
+      "cond_turnover": {
+        "months": 118,
+        "mean_gross_pct_pm": 1.532,
+        "mean_net_pct_pm": 1.132,
+        "ann_net_pct": 13.59,
+        "t_stat_gross_nw": 2.53,
+        "t_stat_net_nw": 1.87,
+        "sharpe_net": 0.56,
+        "pct_months_positive": 66.1,
+        "avg_turnover": 1.0,
+        "long_only_ann_net_pct": 14.65,
+        "avg_names": 445
+      },
+      "early": {
+        "months": 59,
+        "mean_gross_pct_pm": 1.993,
+        "mean_net_pct_pm": 1.828,
+        "ann_net_pct": 21.94,
+        "t_stat_gross_nw": 1.98,
+        "t_stat_net_nw": 1.82,
+        "sharpe_net": 0.81,
+        "pct_months_positive": 67.8,
+        "avg_turnover": 0.411,
+        "long_only_ann_net_pct": 16.93,
+        "avg_names": 377
+      },
+      "late": {
+        "months": 59,
+        "mean_gross_pct_pm": 1.204,
+        "mean_net_pct_pm": 1.048,
+        "ann_net_pct": 12.57,
+        "t_stat_gross_nw": 1.66,
+        "t_stat_net_nw": 1.45,
+        "sharpe_net": 0.56,
+        "pct_months_positive": 59.3,
+        "avg_turnover": 0.389,
+        "long_only_ann_net_pct": 16.68,
+        "avg_names": 512
+      }
+    },
+    "low_volatility": {
+      "uncond": {
+        "months": 118,
+        "mean_gross_pct_pm": 1.038,
+        "mean_net_pct_pm": 0.79,
+        "ann_net_pct": 9.48,
+        "t_stat_gross_nw": 1.97,
+        "t_stat_net_nw": 1.5,
+        "sharpe_net": 0.5,
+        "pct_months_positive": 58.5,
+        "avg_turnover": 0.621,
+        "long_only_ann_net_pct": 10.15,
+        "avg_names": 445
+      },
+      "cond_turnover": {
+        "months": 118,
+        "mean_gross_pct_pm": 1.178,
+        "mean_net_pct_pm": 0.778,
+        "ann_net_pct": 9.34,
+        "t_stat_gross_nw": 2.43,
+        "t_stat_net_nw": 1.6,
+        "sharpe_net": 0.52,
+        "pct_months_positive": 55.9,
+        "avg_turnover": 1.0,
+        "long_only_ann_net_pct": 10.23,
+        "avg_names": 445
+      },
+      "early": {
+        "months": 59,
+        "mean_gross_pct_pm": 0.694,
+        "mean_net_pct_pm": 0.447,
+        "ann_net_pct": 5.36,
+        "t_stat_gross_nw": 0.86,
+        "t_stat_net_nw": 0.56,
+        "sharpe_net": 0.25,
+        "pct_months_positive": 57.6,
+        "avg_turnover": 0.617,
+        "long_only_ann_net_pct": 6.84,
+        "avg_names": 377
+      },
+      "late": {
+        "months": 59,
+        "mean_gross_pct_pm": 1.382,
+        "mean_net_pct_pm": 1.132,
+        "ann_net_pct": 13.59,
+        "t_stat_gross_nw": 2.09,
+        "t_stat_net_nw": 1.71,
+        "sharpe_net": 0.8,
+        "pct_months_positive": 59.3,
+        "avg_turnover": 0.624,
+        "long_only_ann_net_pct": 13.45,
+        "avg_names": 512
+      }
+    },
+    "neg_skew": {
+      "uncond": {
+        "months": 118,
+        "mean_gross_pct_pm": -0.522,
+        "mean_net_pct_pm": -0.844,
+        "ann_net_pct": -10.13,
+        "t_stat_gross_nw": -2.63,
+        "t_stat_net_nw": -4.26,
+        "sharpe_net": -1.36,
+        "pct_months_positive": 32.2,
+        "avg_turnover": 0.807,
+        "long_only_ann_net_pct": 1.16,
+        "avg_names": 445
+      },
+      "cond_turnover": {
+        "months": 118,
+        "mean_gross_pct_pm": -0.482,
+        "mean_net_pct_pm": -0.882,
+        "ann_net_pct": -10.58,
+        "t_stat_gross_nw": -2.44,
+        "t_stat_net_nw": -4.47,
+        "sharpe_net": -1.48,
+        "pct_months_positive": 32.2,
+        "avg_turnover": 1.0,
+        "long_only_ann_net_pct": 1.48,
+        "avg_names": 445
+      },
+      "early": {
+        "months": 59,
+        "mean_gross_pct_pm": -0.807,
+        "mean_net_pct_pm": -1.131,
+        "ann_net_pct": -13.57,
+        "t_stat_gross_nw": -2.7,
+        "t_stat_net_nw": -3.79,
+        "sharpe_net": -1.66,
+        "pct_months_positive": 27.1,
+        "avg_turnover": 0.81,
+        "long_only_ann_net_pct": -1.49,
+        "avg_names": 377
+      },
+      "late": {
+        "months": 59,
+        "mean_gross_pct_pm": -0.237,
+        "mean_net_pct_pm": -0.558,
+        "ann_net_pct": -6.7,
+        "t_stat_gross_nw": -0.95,
+        "t_stat_net_nw": -2.24,
+        "sharpe_net": -1.03,
+        "pct_months_positive": 37.3,
+        "avg_turnover": 0.804,
+        "long_only_ann_net_pct": 3.81,
+        "avg_names": 512
+      }
+    },
+    "low_turnover": {
+      "uncond": {
+        "months": 118,
+        "mean_gross_pct_pm": 0.421,
+        "mean_net_pct_pm": 0.261,
+        "ann_net_pct": 3.13,
+        "t_stat_gross_nw": 1.22,
+        "t_stat_net_nw": 0.76,
+        "sharpe_net": 0.24,
+        "pct_months_positive": 56.8,
+        "avg_turnover": 0.398,
+        "long_only_ann_net_pct": 7.48,
+        "avg_names": 445
+      },
+      "cond_turnover": {
+        "months": 118,
+        "mean_gross_pct_pm": 0.501,
+        "mean_net_pct_pm": 0.101,
+        "ann_net_pct": 1.21,
+        "t_stat_gross_nw": 1.09,
+        "t_stat_net_nw": 0.22,
+        "sharpe_net": 0.07,
+        "pct_months_positive": 56.8,
+        "avg_turnover": 1.0,
+        "long_only_ann_net_pct": 8.21,
+        "avg_names": 445
+      },
+      "early": {
+        "months": 59,
+        "mean_gross_pct_pm": 0.209,
+        "mean_net_pct_pm": 0.047,
+        "ann_net_pct": 0.56,
+        "t_stat_gross_nw": 0.39,
+        "t_stat_net_nw": 0.09,
+        "sharpe_net": 0.04,
+        "pct_months_positive": 57.6,
+        "avg_turnover": 0.404,
+        "long_only_ann_net_pct": 5.21,
+        "avg_names": 377
+      },
+      "late": {
+        "months": 59,
+        "mean_gross_pct_pm": 0.633,
+        "mean_net_pct_pm": 0.475,
+        "ann_net_pct": 5.71,
+        "t_stat_gross_nw": 1.5,
+        "t_stat_net_nw": 1.13,
+        "sharpe_net": 0.51,
+        "pct_months_positive": 55.9,
+        "avg_turnover": 0.393,
+        "long_only_ann_net_pct": 9.75,
+        "avg_names": 512
+      }
+    },
+    "short_term_reversal": {
+      "uncond": {
+        "months": 118,
+        "mean_gross_pct_pm": -0.467,
+        "mean_net_pct_pm": -0.794,
+        "ann_net_pct": -9.52,
+        "t_stat_gross_nw": -1.0,
+        "t_stat_net_nw": -1.7,
+        "sharpe_net": -0.55,
+        "pct_months_positive": 38.1,
+        "avg_turnover": 0.818,
+        "long_only_ann_net_pct": 2.85,
+        "avg_names": 445
+      },
+      "cond_turnover": {
+        "months": 118,
+        "mean_gross_pct_pm": -0.476,
+        "mean_net_pct_pm": -0.876,
+        "ann_net_pct": -10.52,
+        "t_stat_gross_nw": -1.04,
+        "t_stat_net_nw": -1.92,
+        "sharpe_net": -0.62,
+        "pct_months_positive": 34.7,
+        "avg_turnover": 1.0,
+        "long_only_ann_net_pct": 3.22,
+        "avg_names": 445
+      },
+      "early": {
+        "months": 59,
+        "mean_gross_pct_pm": -1.455,
+        "mean_net_pct_pm": -1.778,
+        "ann_net_pct": -21.33,
+        "t_stat_gross_nw": -2.06,
+        "t_stat_net_nw": -2.52,
+        "sharpe_net": -1.12,
+        "pct_months_positive": 32.2,
+        "avg_turnover": 0.807,
+        "long_only_ann_net_pct": -3.69,
+        "avg_names": 377
+      },
+      "late": {
+        "months": 59,
+        "mean_gross_pct_pm": 0.522,
+        "mean_net_pct_pm": 0.19,
+        "ann_net_pct": 2.28,
+        "t_stat_gross_nw": 0.93,
+        "t_stat_net_nw": 0.34,
+        "sharpe_net": 0.16,
+        "pct_months_positive": 44.1,
+        "avg_turnover": 0.829,
+        "long_only_ann_net_pct": 9.38,
+        "avg_names": 512
+      }
+    }
+  }
+}

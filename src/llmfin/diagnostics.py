@@ -4,7 +4,7 @@ diagnostics.py
 Standing data-quality diagnostics over the local bhavcopy DB. Currently one
 surface: `list_data_anomalies`, built from the corporate-action adjustment
 log that used to only exist as a one-off scratch script run by hand during
-the 2010-2020 backtest loop (see CLAUDE.md project history). Reusing
+the 2010-2020 backtest loop (see README.md project history). Reusing
 backtest.py's full-history panel loader means this reports on exactly the
 same adjustment decisions a backtest run would make, not a separate
 recomputation that could drift from it.

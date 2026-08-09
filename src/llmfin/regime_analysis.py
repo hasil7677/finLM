@@ -115,7 +115,7 @@ def yearly_fade_alpha_vs_regime(
     NOTE ON STATISTICAL POWER: this is n=11 (one point per year). Treat any
     correlation here as a hypothesis to investigate further (e.g. a monthly
     or rolling-window version, which would have far more points), not as a
-    validated sizing signal -- CLAUDE.md's own working style is to state
+    validated sizing signal -- README.md's own working style is to state
     n plainly rather than dress up a small sample as a strong finding.
     """
     exit_cfg = exit_cfg or ExitConfig(entry_style="pullback", stop_mult=2.0, target_mult=2.5, horizon=10)

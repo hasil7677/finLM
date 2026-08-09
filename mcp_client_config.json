@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "llmfin-trading": {
+      "command": "~/Downloads/finLM/finLLM/.venv/Scripts/python.exe",
+      "args": ["-m", "llmfin.server"],
+      "cwd": "~/Downloads/finLM/finLLM"
+    }
+  }
+}

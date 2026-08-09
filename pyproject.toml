@@ -23,12 +23,19 @@ dependencies = [
 [project.optional-dependencies]
 dev = ["pytest>=8"]
 
+[tool.pytest.ini_options]
+# Only tests/ is a test suite. artifacts/ holds one-off analysis scripts, and
+# pytest's default glob picks up names like decay_test.py and executes them at
+# import — which fails, and would be a confusing way to break the suite.
+testpaths = ["tests"]
+
 [project.scripts]
 llmfin-server = "llmfin.server:main"
 llmfin-research = "llmfin.batch_runner:main"
 llmfin-scan = "llmfin.scanner:main"
 llmfin-scan-accum = "llmfin.accumulation_scanner:main"
-llmfin-anomalies = "llmfin.diagnostics:main"
+llmfin-anomalies = "llmfin.diagnostics:main"          # data-quality anomalies (corporate actions)
+llmfin-replicate = "llmfin.anomalies:main"            # cross-sectional anomaly replication study
 llmfin-portfolio-backtest = "llmfin.portfolio_backtest:main"
 llmfin-regime-analysis = "llmfin.regime_analysis:main"
 llmfin-ingest = "llmfin.data_store:main"

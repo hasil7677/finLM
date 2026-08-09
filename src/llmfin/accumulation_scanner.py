@@ -4,7 +4,7 @@ accumulation_scanner.py
 Long-side discovery: the deliberate opposite of scan_market.
 
 scan_market finds explosions — big single-day gap/volume moves. §6's
-backtest evidence (CLAUDE.md) says explosions have no long edge: chasing
+backtest evidence (README.md) says explosions have no long edge: chasing
 them loses in every configuration tested across 11 years of NSE history: the
 only edge in that candidate stream is fading them (a sell). §7 names the fix
 directly: a long strategy needs a DIFFERENT screen — rising volume, tight

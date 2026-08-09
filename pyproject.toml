@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "llmfin"
 version = "0.2.0"
-description = "MCP-based trading intelligence layer for Indian markets (NSE) — scanner, signals, research, journal, and risk-gated execution via Zerodha Kite Connect"
+description = "MCP-based trading intelligence layer for Indian markets (NSE) - scanner, signals, research, journal, and risk-gated execution via Zerodha Kite Connect"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
@@ -26,7 +26,7 @@ dev = ["pytest>=8"]
 [tool.pytest.ini_options]
 # Only tests/ is a test suite. artifacts/ holds one-off analysis scripts, and
 # pytest's default glob picks up names like decay_test.py and executes them at
-# import — which fails, and would be a confusing way to break the suite.
+# import - which fails, and would be a confusing way to break the suite.
 testpaths = ["tests"]
 
 [project.scripts]

@@ -5,10 +5,10 @@ CLI helper to complete the Zerodha OAuth flow.
 
 Usage
 ─────
-    # Step 1 — Get the login URL
+    # Step 1 - Get the login URL
     python -m llmfin.auth
 
-    # Step 2 — After login, paste the request_token from the redirect URL
+    # Step 2 - After login, paste the request_token from the redirect URL
     python -m llmfin.auth --request-token <TOKEN>
 """
 
@@ -32,9 +32,9 @@ def main() -> None:
     args = parser.parse_args()
 
     if args.request_token:
-        print("Exchanging request_token …")
+        print("Exchanging request_token ...")
         access_token = exchange_request_token(args.request_token)
-        print(f"\n✅ Access token obtained and cached.\n   Token: {access_token[:8]}…{access_token[-8:]}")
+        print(f"\n✅ Access token obtained and cached.\n   Token: {access_token[:8]}...{access_token[-8:]}")
         print("\nYou can now run the batch runner or MCP server.")
     else:
         url = get_login_url()

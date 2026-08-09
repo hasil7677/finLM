@@ -4,8 +4,8 @@ data_store.py
 The free EOD data spine: NSE bhavcopy → SQLite.
 
 Downloads NSE's daily UDiFF equity bhavcopy (official, free, published every
-evening) and ingests it into a local SQLite database. Everything else — the
-scanner, EOD review, averages — reads from this DB, so the screening layer
+evening) and ingests it into a local SQLite database. Everything else - the
+scanner, EOD review, averages - reads from this DB, so the screening layer
 needs NO broker API or paid data subscription.
 
 Usage
@@ -106,7 +106,7 @@ def fetch_bhavcopy(day: date, session: Optional[requests.Session] = None) -> Opt
 
     missing = [c for c in _COLMAP if c not in df.columns]
     if missing:
-        raise ValueError(f"Bhavcopy format changed — missing columns: {missing}")
+        raise ValueError(f"Bhavcopy format changed - missing columns: {missing}")
 
     df = df[list(_COLMAP)].rename(columns=_COLMAP)
     df = df[df["series"].isin(["EQ", "BE"])].copy()  # cash-equity series only
@@ -205,7 +205,7 @@ def _recent_panel(calendar_days_back: int = 60) -> tuple[pd.DataFrame, str]:
     that needs more than one day of history per symbol (latest_snapshot's
     single-day view, or a multi-day window scan like quiet-accumulation).
 
-    Back-adjusted for splits/bonuses before any rolling stat is computed —
+    Back-adjusted for splits/bonuses before any rolling stat is computed -
     a real split landing inside the window produces a fake giant single-day
     move to every indicator that reads across it (see corporate_actions.py).
     Only `calendar_days_back` calendar days per symbol are pulled, so a split
@@ -216,7 +216,7 @@ def _recent_panel(calendar_days_back: int = 60) -> tuple[pd.DataFrame, str]:
     latest = conn.execute("SELECT MAX(date) FROM daily_prices").fetchone()[0]
     if latest is None:
         conn.close()
-        raise RuntimeError("Market DB is empty — run `llmfin-ingest` first.")
+        raise RuntimeError("Market DB is empty - run `llmfin-ingest` first.")
     cutoff = (datetime.strptime(latest, "%Y-%m-%d") - timedelta(days=calendar_days_back)).strftime("%Y-%m-%d")
     df = pd.read_sql_query(
         """
@@ -233,7 +233,7 @@ def _recent_panel(calendar_days_back: int = 60) -> tuple[pd.DataFrame, str]:
 
 def latest_snapshot() -> pd.DataFrame:
     """Latest trading day's rows joined with each symbol's 20-day average volume
-    and 20-day average close — the mover scanner's raw material."""
+    and 20-day average close - the mover scanner's raw material."""
     df, latest = _recent_panel(60)
     g = df.groupby("symbol", sort=False)
     df = df.assign(

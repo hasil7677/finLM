@@ -1,22 +1,22 @@
 """
 server.py
 ─────────
-llmfin MCP server — the trading intelligence layer, exposed to any MCP client
-(Cursor-style MCP clients, …) over stdio.
+llmfin MCP server - the trading intelligence layer, exposed to any MCP client
+(Cursor-style MCP clients, ...) over stdio.
 
 Tool map (15 tools, 4 layers)
 ─────────────────────────────
-  DISCOVERY   (free, no credentials — local bhavcopy DB)
+  DISCOVERY   (free, no credentials - local bhavcopy DB)
     ingest_market_data      refresh the local NSE EOD database
     scan_market             deterministic screen: today's liquid movers
     scan_accumulation       deterministic screen: quiet long-side candidates
-                             (unvalidated — see its docstring before trusting it)
+                             (unvalidated - see its docstring before trusting it)
     list_data_anomalies     corporate-action adjustment decisions (audit trail)
   ANALYSIS    (free; upgrades to live Kite data when authenticated)
     research_instrument     indicators + trend/mean-reversion signals + ATR plan
     get_batch_research      the same, over a list of symbols
-    research_symbol         news/catalyst lookup — WHY is it moving (Tavily)
-  JOURNAL     (free — the feedback loop)
+    research_symbol         news/catalyst lookup - WHY is it moving (Tavily)
+  JOURNAL     (free - the feedback loop)
     log_decision            record a pick WITH its thesis
     eod_review              score past picks against what actually happened
     get_journal             recent decisions
@@ -26,9 +26,9 @@ Tool map (15 tools, 4 layers)
     get_portfolio_positions current positions
     place_order             risk-gated order placement (mandate + kill switch)
     get_risk_status         active mandate, kill-switch state, orders and
-                             rupees committed today (free — no session needed)
+                             rupees committed today (free - no session needed)
 
-The risk gate on place_order is enforced server-side (see risk.py) — there is
+The risk gate on place_order is enforced server-side (see risk.py) - there is
 no flag an LLM can set to bypass it.
 """
 
@@ -93,7 +93,7 @@ async def scan_market(
 
     Filters ~2000 stocks down to the few that are liquid AND unusually active:
     price/volume/turnover floors, then gap %, change %, and volume vs the
-    20-day average. This is the discovery step — run it FIRST, then use
+    20-day average. This is the discovery step - run it FIRST, then use
     research_symbol on the survivors to find out WHY each one is moving.
     Uses the local bhavcopy DB (run ingest_market_data if it errors).
     """
@@ -108,7 +108,7 @@ async def scan_market(
         )
     )
     if not hits:
-        return _json({"hits": [], "note": "No symbols passed the filters — try loosening them."})
+        return _json({"hits": [], "note": "No symbols passed the filters - try loosening them."})
     return _json([asdict(h) for h in hits])
 
 
@@ -120,7 +120,7 @@ async def scan_accumulation(
     max_avg_range_pct: float = 3.5,
     limit: int = 15,
 ) -> str:
-    """Deterministically screen for quiet long-side accumulation candidates —
+    """Deterministically screen for quiet long-side accumulation candidates -
     the opposite of scan_market.
 
     scan_market finds explosions, and the backtest evidence (README.md)
@@ -133,7 +133,7 @@ async def scan_accumulation(
     UNVALIDATED: unlike scan_market's fade/chase result, this screen has not
     been through the point-in-time backtest loop yet. Treat hits as research
     candidates for research_symbol / research_instrument, not as a proven
-    edge — say so plainly if asked about track record. Uses the local
+    edge - say so plainly if asked about track record. Uses the local
     bhavcopy DB (run ingest_market_data if it errors).
     """
     hits = await anyio.to_thread.run_sync(
@@ -148,20 +148,20 @@ async def scan_accumulation(
     # The UNVALIDATED status travels in the PAYLOAD, not only the docstring.
     # A caller that reads the returned data rather than the tool description
     # would otherwise see a clean list of stock picks indistinguishable from
-    # scan_market's backtested output — the same failure mode this project
+    # scan_market's backtested output - the same failure mode this project
     # documents elsewhere: a capability asserted in prose that the data does
     # not carry, which an LLM will confabulate over rather than report.
     return _json({
         "validation": "UNVALIDATED",
         "warning": (
             "This screen has NOT been through the point-in-time backtest loop. "
-            "There is no evidence of a long-side edge — no win rate, no alpha, "
+            "There is no evidence of a long-side edge - no win rate, no alpha, "
             "no sample size. Unlike scan_market's fade result (README.md), "
             "nothing here is backtested. Present these as research candidates "
             "only, and state the absence of a track record if asked."
         ),
         "hits": [asdict(h) for h in hits],
-        "note": None if hits else "No symbols passed the filters — try loosening them.",
+        "note": None if hits else "No symbols passed the filters - try loosening them.",
     })
 
 
@@ -172,7 +172,7 @@ async def list_data_anomalies(symbol: Optional[str] = None) -> str:
     into what it auto-adjusted vs what it flagged and left alone (with why).
 
     Run this after ingest_market_data pulls in new history, or whenever a
-    scan_market/scan_accumulation/backtest number looks off — a real
+    scan_market/scan_accumulation/backtest number looks off - a real
     split/bonus in a symbol you follow should appear under "applied";
     anything under "flagged" is either a genuine crash the guards correctly
     declined to touch, or worth a closer look. Pass `symbol` to filter to
@@ -195,7 +195,7 @@ async def research_instrument(
     lookback_days: int = 180,
 ) -> str:
     """Full technical research on one instrument: RSI/MACD/Bollinger/EMA/ATR
-    plus TWO independent signals — trend-following and mean-reversion — each
+    plus TWO independent signals - trend-following and mean-reversion - each
     with conviction (-1..+1) and written reasoning, and an ATR-based
     entry/stop/target plan for any non-HOLD signal.
 
@@ -252,10 +252,10 @@ async def research_symbol(
     move_date: str = "",
 ) -> str:
     """Find out WHY a stock is moving: recent news, earnings, orders, corporate
-    actions — via web search (Tavily). A 4% gap on a real catalyst is a
+    actions - via web search (Tavily). A 4% gap on a real catalyst is a
     different trade than a 4% gap on nothing; run this on every scan_market
     survivor before ranking. ALWAYS pass change_pct and move_date from the
-    scan_market hit when available — it makes the search dramatically more
+    scan_market hit when available - it makes the search dramatically more
     precise. Weigh the returned sources yourself; the synthesized answer can
     conflate companies. Requires TAVILY_API_KEY in the environment."""
     result = await anyio.to_thread.run_sync(
@@ -283,7 +283,7 @@ async def log_decision(
     source: str = "scanner+news",
 ) -> str:
     """Journal a trading decision WITH its full reasoning, before or instead of
-    acting on it. ALWAYS log the thesis verbatim — eod_review scores these
+    acting on it. ALWAYS log the thesis verbatim - eod_review scores these
     against real market data later, which is how this system learns whether
     its picks are any good. AVOID entries (deliberate passes) are scored too."""
     result = await anyio.to_thread.run_sync(
@@ -313,7 +313,7 @@ async def eod_review(trade_date: Optional[str] = None) -> str:
 
 @mcp.tool()
 async def get_journal(limit: int = 50) -> str:
-    """Return the most recent journaled decisions with outcomes — the raw
+    """Return the most recent journaled decisions with outcomes - the raw
     material for 'what is my hit rate on gap-up trades' style questions."""
     return _json(await anyio.to_thread.run_sync(lambda: journal_mod.get_journal(limit)))
 
@@ -398,7 +398,7 @@ async def place_order(
     product: Literal["CNC", "MIS", "NRML"] = "CNC",
     exchange: str = "NSE",
 ) -> str:
-    """Place an order via Zerodha Kite — gated by the user's risk mandate.
+    """Place an order via Zerodha Kite - gated by the user's risk mandate.
 
     Every order is validated server-side against risk_limits.json (order value
     cap, quantity cap, daily order count, product/symbol allowlists) and a
@@ -412,7 +412,7 @@ async def place_order(
 
     def _run() -> dict:
         # Estimate order value for the mandate check. A caller-supplied `price`
-        # is only a real ceiling on the fill for a BUY LIMIT/SL — a MARKET or
+        # is only a real ceiling on the fill for a BUY LIMIT/SL - a MARKET or
         # SL-M order ignores it, and a SELL fills at the market no matter how
         # low the limit is. Anywhere else we must use a live quote, because
         # `price` is an unverified number chosen by the model.
@@ -474,7 +474,7 @@ async def place_order(
 @mcp.tool()
 async def get_risk_status() -> str:
     """Show the active risk mandate, kill-switch state, and today's order
-    count — what place_order will and won't allow right now."""
+    count - what place_order will and won't allow right now."""
 
     def _run() -> dict:
         return {
@@ -484,7 +484,7 @@ async def get_risk_status() -> str:
             "orders_placed_today": risk_mod.orders_placed_today(),
             "order_value_committed_today_inr": risk_mod.order_value_today(),
             "note": (
-                "Edit risk_limits.json yourself to change limits — the LLM "
+                "Edit risk_limits.json yourself to change limits - the LLM "
                 "cannot. Touch a KILL_SWITCH file to freeze all trading."
             ),
         }
@@ -510,12 +510,12 @@ def main() -> None:
     args = parser.parse_args()
 
     if args.http:
-        mcp.settings.host = "127.0.0.1"   # local only — never bind 0.0.0.0
+        mcp.settings.host = "127.0.0.1"   # local only - never bind 0.0.0.0
         mcp.settings.port = args.port
-        logger.info("Starting llmfin MCP server at http://127.0.0.1:%d/mcp …", args.port)
+        logger.info("Starting llmfin MCP server at http://127.0.0.1:%d/mcp ...", args.port)
         mcp.run(transport="streamable-http")
     else:
-        logger.info("Starting llmfin MCP server (stdio) …")
+        logger.info("Starting llmfin MCP server (stdio) ...")
         mcp.run()
 
 

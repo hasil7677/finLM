@@ -1,12 +1,12 @@
 """
 signals.py
 ──────────
-Alpha models — each one analyzes an indicator DataFrame and returns a Signal
+Alpha models - each one analyzes an indicator DataFrame and returns a Signal
 with a conviction score in [-1, +1] plus written reasoning.
 
 Design borrowed from ai-hedge-fund v2 / Vibe-Trading: signal sources share one
 interface and are NEVER averaged into a single vote across regimes. Trend
-following and mean reversion are opposing philosophies — a strong uptrend is a
+following and mean reversion are opposing philosophies - a strong uptrend is a
 BUY to one and an overbought SELL to the other. Present both; let the ranking
 layer (or the human) weigh them by regime.
 """
@@ -64,26 +64,26 @@ class TrendFollowingModel:
         if ema50 is not None:
             if close > ema50:
                 score += 0.35
-                reasons.append(f"Close {close:.2f} above EMA50 {ema50:.2f} — uptrend intact")
+                reasons.append(f"Close {close:.2f} above EMA50 {ema50:.2f} - uptrend intact")
             else:
                 score -= 0.35
-                reasons.append(f"Close {close:.2f} below EMA50 {ema50:.2f} — downtrend")
+                reasons.append(f"Close {close:.2f} below EMA50 {ema50:.2f} - downtrend")
 
         if ema20 is not None and ema50 is not None:
             if ema20 > ema50:
                 score += 0.15
-                reasons.append("EMA20 above EMA50 — short-term momentum aligned with trend")
+                reasons.append("EMA20 above EMA50 - short-term momentum aligned with trend")
             else:
                 score -= 0.15
-                reasons.append("EMA20 below EMA50 — short-term momentum against trend")
+                reasons.append("EMA20 below EMA50 - short-term momentum against trend")
 
         if macd_hist is not None:
             if macd_hist > 0:
                 score += 0.30
-                reasons.append(f"MACD histogram {macd_hist:.4f} positive — bullish momentum")
+                reasons.append(f"MACD histogram {macd_hist:.4f} positive - bullish momentum")
             else:
                 score -= 0.30
-                reasons.append(f"MACD histogram {macd_hist:.4f} negative — bearish momentum")
+                reasons.append(f"MACD histogram {macd_hist:.4f} negative - bearish momentum")
 
         # For a trend follower, healthy RSI is 45-75; >80 is exhaustion risk,
         # <40 means there is no uptrend to follow.
@@ -93,10 +93,10 @@ class TrendFollowingModel:
                 reasons.append(f"RSI {rsi:.1f} in healthy trend range (45-75)")
             elif rsi > 80:
                 score -= 0.10
-                reasons.append(f"RSI {rsi:.1f} — trend extended, exhaustion risk")
+                reasons.append(f"RSI {rsi:.1f} - trend extended, exhaustion risk")
             elif rsi < 40:
                 score -= 0.10
-                reasons.append(f"RSI {rsi:.1f} — momentum too weak for trend entry")
+                reasons.append(f"RSI {rsi:.1f} - momentum too weak for trend entry")
 
         direction: Literal["BUY", "SELL", "HOLD"]
         if score >= 0.5:
@@ -113,7 +113,7 @@ class MeanReversionModel:
     """Buys washed-out weakness in otherwise healthy names; sells euphoria.
 
     Only takes long mean-reversion entries when the longer trend is not
-    broken (close within ~10% of EMA50) — otherwise oversold is a falling
+    broken (close within ~10% of EMA50) - otherwise oversold is a falling
     knife, not a dip.
     """
 
@@ -137,36 +137,36 @@ class MeanReversionModel:
         if rsi is not None:
             if rsi < 30:
                 score += 0.40
-                reasons.append(f"RSI {rsi:.1f} — deeply oversold (<30)")
+                reasons.append(f"RSI {rsi:.1f} - deeply oversold (<30)")
             elif rsi < 35:
                 score += 0.25
-                reasons.append(f"RSI {rsi:.1f} — oversold (<35)")
+                reasons.append(f"RSI {rsi:.1f} - oversold (<35)")
             elif rsi > 70:
                 score -= 0.40
-                reasons.append(f"RSI {rsi:.1f} — overbought (>70)")
+                reasons.append(f"RSI {rsi:.1f} - overbought (>70)")
             elif rsi > 65:
                 score -= 0.25
-                reasons.append(f"RSI {rsi:.1f} — stretched (>65)")
+                reasons.append(f"RSI {rsi:.1f} - stretched (>65)")
 
         if bb_pos is not None:
             if bb_pos < 0.15:
                 score += 0.35
-                reasons.append(f"Price at {bb_pos:.0%} of Bollinger range — at/below lower band")
+                reasons.append(f"Price at {bb_pos:.0%} of Bollinger range - at/below lower band")
             elif bb_pos < 0.25:
                 score += 0.20
-                reasons.append(f"Price at {bb_pos:.0%} of Bollinger range — near lower band")
+                reasons.append(f"Price at {bb_pos:.0%} of Bollinger range - near lower band")
             elif bb_pos > 0.85:
                 score -= 0.35
-                reasons.append(f"Price at {bb_pos:.0%} of Bollinger range — at/above upper band")
+                reasons.append(f"Price at {bb_pos:.0%} of Bollinger range - at/above upper band")
             elif bb_pos > 0.75:
                 score -= 0.20
-                reasons.append(f"Price at {bb_pos:.0%} of Bollinger range — near upper band")
+                reasons.append(f"Price at {bb_pos:.0%} of Bollinger range - near upper band")
 
         # Falling-knife guard: don't buy oversold names in broken trends.
         if score > 0 and ema50 is not None and close < 0.90 * ema50:
             score = 0.0
             reasons.append(
-                f"VETO: close {close:.2f} is >10% below EMA50 {ema50:.2f} — "
+                f"VETO: close {close:.2f} is >10% below EMA50 {ema50:.2f} - "
                 "broken trend, oversold is a falling knife not a dip"
             )
 

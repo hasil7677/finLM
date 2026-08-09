@@ -8,7 +8,7 @@ Data source is chosen automatically:
   • the local bhavcopy SQLite DB (daily candles, free, no credentials).
 
 The result carries BOTH the trend-following and mean-reversion signals with
-their reasoning — deliberately not averaged (see signals.py).
+their reasoning - deliberately not averaged (see signals.py).
 """
 
 from __future__ import annotations
@@ -47,7 +47,7 @@ def _rate_limited_call(fn, *args, **kwargs):
         except Exception as exc:
             if "too many requests" in str(exc).lower() and attempt < 2:
                 wait = 2 ** (attempt + 1)
-                logger.warning("Rate limited — retrying in %ss …", wait)
+                logger.warning("Rate limited - retrying in %ss ...", wait)
                 time.sleep(wait)
             else:
                 raise
@@ -154,7 +154,7 @@ def research_instrument(
             df_raw = fetch_ohlcv_kite(kite, instrument_token, interval, lookback_days)
             data_source = "kite"
         except Exception as exc:
-            logger.warning("Kite fetch failed for %s (%s) — falling back to local DB", symbol, exc)
+            logger.warning("Kite fetch failed for %s (%s) - falling back to local DB", symbol, exc)
 
     if df_raw is None:
         df_raw = load_history(symbol, lookback_days=lookback_days)

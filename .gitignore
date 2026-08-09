@@ -8,3 +8,5 @@ reports/
 *.egg-info/
 llmfin.mcpb
 market_full.db
+.pytest_cache/
+artifacts/__pycache__/

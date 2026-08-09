@@ -25,9 +25,9 @@ METHODOLOGY
   • Monthly formation. Characteristics use data through month t only; returns
     are earned over t+1. No characteristic may reference the holding period.
   • Point-in-time liquid universe, re-derived every month from that month's own
-    price/volume/turnover — never from a current symbol list.
+    price/volume/turnover - never from a current symbol list.
   • Equal-weight quantile portfolios (the DB has no shares outstanding, so
-    value-weighting and a true size factor are not available — stated as a
+    value-weighting and a true size factor are not available - stated as a
     limitation rather than proxied badly).
   • Long-short = top quantile minus bottom quantile, where every characteristic
     is SIGNED so that high = expected high return. The sign convention is
@@ -37,7 +37,7 @@ METHODOLOGY
     holding periods make raw t-stats badly overstated.
 
 SHORTING: the short leg is not implementable in an Indian cash account (see
-CLAUDE.md §7). Long-short spreads are reported because that is what the
+README.md). Long-short spreads are reported because that is what the
 literature reports and what makes these numbers comparable; the long-only leg is
 reported alongside for anything an actual cash account could hold.
 """
@@ -81,7 +81,7 @@ def _monthly_panel(db_path: Path, cfg: AnomalyConfig, adjust: bool = True) -> pd
 
     Processed in symbol batches: corporate-action adjustment is per-symbol, so
     batching is safe, and it keeps the 4.15M-row historical DB inside this
-    machine's memory (CLAUDE.md §4 records the same constraint for
+    machine's memory (README.md records the same constraint for
     regime_analysis.py).
     """
     conn = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
@@ -291,7 +291,7 @@ def conditional_sort(panel: pd.DataFrame, char: str, cfg: AnomalyConfig,
             longs.append(float(hi["fwd"].mean()))
         if not spreads:
             continue
-        # Costs: assume full turnover each rebalance — conservative, and the
+        # Costs: assume full turnover each rebalance - conservative, and the
         # bucket-level name overlap is not tracked here.
         cost = 2 * cfg.cost_pct_per_side / 100.0
         s = float(np.mean(spreads))
@@ -376,7 +376,7 @@ def benjamini_hochberg(pvals: dict[str, float], q: float = 0.10) -> dict:
     """BH step-up procedure. Returns which hypotheses survive at FDR level q.
 
     Controls the expected proportion of false discoveries among rejections,
-    which is the right target when screening a family of candidate anomalies —
+    which is the right target when screening a family of candidate anomalies -
     Bonferroni controls the probability of *any* false positive and is far too
     conservative for this purpose."""
     items = sorted(pvals.items(), key=lambda kv: kv[1])
@@ -417,7 +417,7 @@ def bootstrap_max_t(panel: pd.DataFrame, chars: list[str], cfg: AnomalyConfig,
     p = p[["month", "symbol", "fwd"] + chars].dropna(subset=["fwd"])
 
     # Permuting `fwd` within a month cannot change which names fall in which
-    # quantile — membership depends only on the characteristic. So compute
+    # quantile - membership depends only on the characteristic. So compute
     # memberships ONCE and make each bootstrap iteration pure numpy over fixed
     # index sets. Same estimator, ~2 orders of magnitude faster.
     months: list[np.ndarray] = []          # fwd values per month

@@ -63,7 +63,7 @@ def test_clean_2for1_split_is_adjusted():
 
 def test_crash_with_spike_volume_near_split_ratio_is_not_adjusted():
     """FINANTECH-shaped case: a real crash whose ratio (~0.333) coincidentally
-    matches a common split ratio (1/3), but at panic-scale volume — guard 2
+    matches a common split ratio (1/3), but at panic-scale volume - guard 2
     (volume-sanity) must block the adjustment."""
     closes = [100.0] * 40 + [33.3] + [33.0, 32.5, 33.8]
     volumes = [10_000] * 40 + [500_000] + [50_000, 40_000, 30_000]  # 50x trailing avg
@@ -74,7 +74,7 @@ def test_crash_with_spike_volume_near_split_ratio_is_not_adjusted():
     assert adjustments[0]["applied"] is False
     assert "volume" in adjustments[0]["reason"]
     # Unadjusted: the historical close should stay at its raw printed value
-    # (volume is float64 either way — the adjuster's factor division always
+    # (volume is float64 either way - the adjuster's factor division always
     # produces floats, even when every factor is 1.0).
     pd.testing.assert_frame_equal(
         out.reset_index(drop=True), df.reset_index(drop=True), check_dtype=False
@@ -85,7 +85,7 @@ def test_crisis_cluster_near_split_ratio_is_not_adjusted():
     """JETAIRWAYS-shaped case: a death-spiral day lands near a clean ratio
     (1.899 ~ 2:1) at volume that individually looks acceptable (baseline is
     already crisis-elevated), but another anomaly sits within the cluster
-    window — guard 3 (isolation) must block the adjustment."""
+    window - guard 3 (isolation) must block the adjustment."""
     closes = [100.0] * 40 + [40.0, 76.0] + [70.0, 65.0, 60.0]
     #                         ^ crash day    ^ "2:1-ish" bounce, ratio 1.9
     volumes = [10_000] * 40 + [60_000, 65_000] + [60_000, 55_000, 50_000]

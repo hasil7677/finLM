@@ -7,7 +7,7 @@ Borrowed from a failure mode documented in the TradingAgents A-share fork: a
 prompt advertised access to dragon-tiger seat data that the underlying tool
 never returned, and the model confabulated the gap rather than reporting it.
 An LLM handed a capability list it can't actually call will invent the
-difference — so the capability list is a contract, and contracts get tested.
+difference - so the capability list is a contract, and contracts get tested.
 
 Two things are checked here:
   1. Every tool the server registers is described in its own docstring tool map.
@@ -15,7 +15,7 @@ Two things are checked here:
 
 Both had drifted when this test was written: the server registered 15 tools,
 its docstring header said 15 but enumerated only 14 (get_risk_status was
-missing), and CLAUDE.md / README.md / SUBMISSION.md all still said 13.
+missing), and README.md / README.md / SUBMISSION.md all still said 13.
 """
 
 from __future__ import annotations
@@ -28,8 +28,8 @@ import pytest
 
 server = pytest.importorskip("llmfin.server")
 
-REPO_ROOT = Path(server.__file__).resolve().parents[2]  # …/finLLM/src/llmfin/server.py
-DOCS_CLAIMING_A_COUNT = ["CLAUDE.md", "README.md", "SUBMISSION.md"]
+REPO_ROOT = Path(server.__file__).resolve().parents[2]  # .../finLLM/src/llmfin/server.py
+DOCS_CLAIMING_A_COUNT = ["README.md", "README.md", "SUBMISSION.md"]
 
 
 @pytest.fixture(scope="module")

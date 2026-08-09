@@ -1,4 +1,4 @@
-"""PRE-REGISTRATION — written and run BEFORE live-window breadth is computed.
+"""PRE-REGISTRATION - written and run BEFORE live-window breadth is computed.
 
 Fits fade alpha ~ breadth on the 11 historical years and emits:
   1. the prediction function,

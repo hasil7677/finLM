@@ -71,7 +71,7 @@ function kicker(s, text, dark) {
     color: ICE, margin: 0,
   });
   s.addText(
-    "Enforced mandates · kill switch · reasoning audit trail · automated outcome scoring.\nScored against real NSE prices. Paper decisions only — no order was ever placed.",
+    "Enforced mandates · kill switch · reasoning audit trail · automated outcome scoring.\nScored against real NSE prices. Paper decisions only - no order was ever placed.",
     { x: M, y: 4.15, w: 8.6, h: 1.0, fontFace: B, fontSize: 15,
       color: ICE, lineSpacing: 24, margin: 0 }
   );
@@ -87,7 +87,7 @@ function kicker(s, text, dark) {
     x: M, y: 6.45, w: 6, h: 0.3, fontFace: B, fontSize: 12,
     color: "7E93B8", margin: 0,
   });
-  s.addNotes("finLM is a governance layer for financial agents. Everyone is shipping agents that can move money. Nobody is shipping the layer that makes them safe to deploy and auditable afterwards. We built that layer and put a market-analysis agent inside it, scored against real NSE closing prices. Be first to say this: the decisions are paper decisions. No order was ever placed, because the mandate file authorising one was never written — the gate refused every time. That is the design demonstrating itself.");
+  s.addNotes("finLM is a governance layer for financial agents. Everyone is shipping agents that can move money. Nobody is shipping the layer that makes them safe to deploy and auditable afterwards. We built that layer and put a market-analysis agent inside it, scored against real NSE closing prices. Be first to say this: the decisions are paper decisions. No order was ever placed, because the mandate file authorising one was never written - the gate refused every time. That is the design demonstrating itself.");
 }
 
 // ============================================================
@@ -135,7 +135,7 @@ function kicker(s, text, dark) {
       color: NAVY, align: "center", valign: "middle", margin: 0,
     });
     s.addText(
-      [{ text: r[0] + " — ", options: { bold: true, color: LIGHT } },
+      [{ text: r[0] + " - ", options: { bold: true, color: LIGHT } },
        { text: r[1], options: { color: ICE } }],
       { x: M + 0.55, y: y, w: 11.3, h: 0.5, fontFace: B, fontSize: 14,
         valign: "middle", margin: 0 }
@@ -154,7 +154,7 @@ function kicker(s, text, dark) {
 
   const qs = [
     ["What did it decide?", "Actions are scattered across chat transcripts and API logs with no canonical record."],
-    ["Why did it think so?", "Reasoning is reconstructed after the fact, if it survives at all — not captured at decision time."],
+    ["Why did it think so?", "Reasoning is reconstructed after the fact, if it survives at all - not captured at decision time."],
     ["Was it right?", "No system grades an agent's judgment against what actually happened, so drift goes unnoticed."],
   ];
   qs.forEach((q, i) => {
@@ -180,11 +180,11 @@ function kicker(s, text, dark) {
   });
 
   s.addText(
-    "In a regulated institution, an agent that cannot be audited cannot be deployed — no matter how good it is.",
+    "In a regulated institution, an agent that cannot be audited cannot be deployed - no matter how good it is.",
     { x: M, y: 5.5, w: W - 2 * M, h: 0.6, fontFace: H, fontSize: 19, italic: true,
       color: INK, margin: 0 }
   );
-  s.addNotes("These are the questions a risk officer, a regulator, or an incident review will ask. Today's financial agents cannot answer any of them. That is the real blocker to deploying agents in a regulated institution — not model capability.");
+  s.addNotes("These are the questions a risk officer, a regulator, or an incident review will ask. Today's financial agents cannot answer any of them. That is the real blocker to deploying agents in a regulated institution - not model capability.");
 }
 
 // ============================================================
@@ -236,7 +236,7 @@ function kicker(s, text, dark) {
   });
 
   s.addText(
-    "Capability and authority are separated by construction — the model can call the checks, never modify them.",
+    "Capability and authority are separated by construction - the model can call the checks, never modify them.",
     { x: M, y: 5.65, w: W - 2 * M, h: 0.5, fontFace: B, fontSize: 14,
       color: SLATE, margin: 0 }
   );
@@ -253,11 +253,11 @@ function kicker(s, text, dark) {
 
   const prims = [
     ["1", "Mandate enforcement",
-     "Every consequential action is validated against a policy file the user writes outside the conversation — value caps, action limits, allowlists. Fails closed: no mandate, nothing executes."],
+     "Every consequential action is validated against a policy file the user writes outside the conversation - value caps, action limits, allowlists. Fails closed: no mandate, nothing executes."],
     ["2", "Kill switch",
-     "A filesystem circuit breaker. Drop the file and every action is refused instantly — no restart, no config reload, no cooperation from the agent required."],
+     "A filesystem circuit breaker. Drop the file and every action is refused instantly - no restart, no config reload, no cooperation from the agent required."],
     ["3", "Reasoning audit trail",
-     "Every decision journaled the moment it is made, with the agent's full thesis captured verbatim — reviewable months later, not reconstructed."],
+     "Every decision journaled the moment it is made, with the agent's full thesis captured verbatim - reviewable months later, not reconstructed."],
     ["4", "Automated outcome scoring",
      "The layer grades its own past decisions against ground truth and reports hit rates, so agent quality is measured rather than assumed."],
   ];
@@ -359,7 +359,7 @@ function kicker(s, text, dark) {
   s.addShape(pres.ShapeType.roundRect, {
     x: M, y: 5.75, w: W - 2 * M, h: 0.85, rectRadius: 0.1, fill: { color: INK },
   });
-  s.addText("Afterwards the scorer grades every journaled decision against what actually happened — closing the loop no agent framework closes today.", {
+  s.addText("Afterwards the scorer grades every journaled decision against what actually happened - closing the loop no agent framework closes today.", {
     x: M + 0.4, y: 5.75, w: W - 2 * M - 0.8, h: 0.85, fontFace: B, fontSize: 13.5,
     color: LIGHT, valign: "middle", margin: 0,
   });
@@ -371,12 +371,12 @@ function kicker(s, text, dark) {
 // ============================================================
 {
   const s = lightSlide();
-  kicker(s, "PROOF — WE ALREADY BUILT AND RAN IT", false);
+  kicker(s, "PROOF - WE ALREADY BUILT AND RAN IT", false);
   title(s, "Validation killed the intuitive policy before money moved", false);
 
   const stats = [
-    ["11/11", "years 2010-2020 with positive net-of-cost alpha, 8,405 trades — sign test p = 0.0005", INK],
-    ["-1.55%", "per trade: the intuitive 'chase momentum' policy, net of costs — negative in every configuration", CORAL],
+    ["11/11", "years 2010-2020 with positive net-of-cost alpha, 8,405 trades - sign test p = 0.0005", INK],
+    ["-1.55%", "per trade: the intuitive 'chase momentum' policy, net of costs - negative in every configuration", CORAL],
     ["+2.32%", "per trade: the validated fade policy, benchmark-adjusted, net of costs", MINT],
   ];
   stats.forEach((st, i) => {
@@ -426,7 +426,7 @@ function kicker(s, text, dark) {
     x: M + 0.3, y: 6.05, w: 4.9, h: 0.85, fontFace: B, fontSize: 13,
     valign: "middle", margin: 0,
   });
-  s.addNotes("We did not just describe a governance layer. We built one and put a market-analysis agent inside it. Pre-deployment validation showed the intuitive strategy loses in every configuration, and validated the counterintuitive one. The top paper decision returned 10.31 percent against a falling market. Say the disclosure out loud before anyone asks: these are paper decisions scored against real closing prices. No order was ever placed, because the mandate file authorising one was never written — the gate refused every time. That is the thesis demonstrating itself, not a missing feature.");
+  s.addNotes("We did not just describe a governance layer. We built one and put a market-analysis agent inside it. Pre-deployment validation showed the intuitive strategy loses in every configuration, and validated the counterintuitive one. The top paper decision returned 10.31 percent against a falling market. Say the disclosure out loud before anyone asks: these are paper decisions scored against real closing prices. No order was ever placed, because the mandate file authorising one was never written - the gate refused every time. That is the thesis demonstrating itself, not a missing feature.");
 }
 
 // ============================================================
@@ -444,7 +444,7 @@ function kicker(s, text, dark) {
     x: M + 0.35, y: 2.15, w: 5.0, h: 0.3, fontFace: B, fontSize: 11, bold: true,
     charSpacing: 2, color: ICE, margin: 0,
   });
-  s.addText("“Moves backed by a genuine news catalyst behave differently, so we take no action on those.”", {
+  s.addText('"Moves backed by a genuine news catalyst behave differently, so we take no action on those."', {
     x: M + 0.35, y: 2.52, w: 5.0, h: 1.1, fontFace: H, fontSize: 16, italic: true,
     color: LIGHT, lineSpacing: 24, margin: 0,
   });
@@ -464,7 +464,7 @@ function kicker(s, text, dark) {
     x: 7.3, y: 2.52, w: 5.0, h: 0.45, fontFace: H, fontSize: 22, bold: true,
     color: LIGHT, margin: 0,
   });
-  s.addText("Catalyst-backed moves reversed just as hard. The agent's own reasoning cost it two profitable decisions — and the data said so within three days.", {
+  s.addText("Catalyst-backed moves reversed just as hard. The agent's own reasoning cost it two profitable decisions - and the data said so within three days.", {
     x: 7.3, y: 3.05, w: 5.0, h: 1.05, fontFace: B, fontSize: 13,
     color: ICE, lineSpacing: 19, margin: 0,
   });
@@ -474,20 +474,20 @@ function kicker(s, text, dark) {
   });
   s.addText([
     { text: "n = 5, one week. ", options: { bold: true, color: MINT } },
-    { text: "Not statistically valid — and logged, dated and testable anyway. That is the point: the loop caught it, not a person reviewing it later.", options: { color: ICE } },
+    { text: "Not statistically valid - and logged, dated and testable anyway. That is the point: the loop caught it, not a person reviewing it later.", options: { color: ICE } },
   ], {
     x: M + 0.35, y: 4.42, w: 11.25, h: 0.62, fontFace: B, fontSize: 13,
     valign: "middle", margin: 0,
   });
 
-  s.addText("AND IT KEPT HAPPENING — THREE TIMES, ESCALATING", {
+  s.addText("AND IT KEPT HAPPENING - THREE TIMES, ESCALATING", {
     x: M, y: 5.2, w: 11.9, h: 0.3, fontFace: B, fontSize: 11, bold: true,
     charSpacing: 2, color: MINT, margin: 0,
   });
   const escalation = [
-    ["Caught after the fact — ", "the catalyst veto above. The scorer contradicted it three days later."],
-    ["Caught by audit — ", "a headline backtest figure would not reproduce. Every run is now stamped so it cannot recur."],
-    ["Caught in advance — ", "a regime hypothesis pre-registered with its falsification region, then falsified by the data."],
+    ["Caught after the fact - ", "the catalyst veto above. The scorer contradicted it three days later."],
+    ["Caught by audit - ", "a headline backtest figure would not reproduce. Every run is now stamped so it cannot recur."],
+    ["Caught in advance - ", "a regime hypothesis pre-registered with its falsification region, then falsified by the data."],
   ];
   escalation.forEach((line, i) => {
     s.addText([
@@ -502,7 +502,7 @@ function kicker(s, text, dark) {
     x: M, y: 6.85, w: 11.9, h: 0.45, fontFace: H, fontSize: 15, bold: true,
     color: LIGHT, margin: 0,
   });
-  s.addNotes("This is the slide that matters. The agent recorded a hypothesis, acted on it, and the scorer proved it wrong three days later. Be first to say the sample size out loud: five decisions over one week, nowhere near statistically valid. The claim is not that the finding is conclusive — it is that the loop surfaced it automatically, dated and reviewable, without a human going looking. Then land the escalation: the same discipline caught a backtest number that would not reproduce (fixed with a provenance layer), and finally caught a regime hypothesis we had pre-registered — prediction interval and falsification region written down BEFORE the data was computed, and the observation landed outside it. The third one is the punchline: anyone can explain a result after the fact; almost nobody sets up a test they can lose. Artifacts for all three are in artifacts/ and cited in the README.");
+  s.addNotes("This is the slide that matters. The agent recorded a hypothesis, acted on it, and the scorer proved it wrong three days later. Be first to say the sample size out loud: five decisions over one week, nowhere near statistically valid. The claim is not that the finding is conclusive - it is that the loop surfaced it automatically, dated and reviewable, without a human going looking. Then land the escalation: the same discipline caught a backtest number that would not reproduce (fixed with a provenance layer), and finally caught a regime hypothesis we had pre-registered - prediction interval and falsification region written down BEFORE the data was computed, and the observation landed outside it. The third one is the punchline: anyone can explain a result after the fact; almost nobody sets up a test they can lose. Artifacts for all three are in artifacts/ and cited in the README.");
 }
 
 // ============================================================
@@ -511,7 +511,7 @@ function kicker(s, text, dark) {
 {
   const s = lightSlide();
   kicker(s, "BEYOND THE PROVING GROUND", false);
-  title(s, "Swap the action schema and the scorer — the layer holds", false);
+  title(s, "Swap the action schema and the scorer - the layer holds", false);
 
   s.addText("Markets were chosen deliberately: they return unambiguous ground truth on a fixed schedule, so a governance layer can be proven rather than asserted. The primitives themselves are domain-agnostic.", {
     x: M, y: 1.85, w: W - 2 * M, h: 0.6, fontFace: B, fontSize: 13.5,
@@ -542,11 +542,11 @@ function kicker(s, text, dark) {
     });
   });
 
-  s.addText("The audit trail, the kill switch and the fail-closed mandate never change. Only the action schema and the definition of “was it right” do.", {
+  s.addText('The audit trail, the kill switch and the fail-closed mandate never change. Only the action schema and the definition of "was it right" do.', {
     x: M, y: 5.8, w: W - 2 * M, h: 0.75, fontFace: H, fontSize: 17, italic: true,
     color: INK, margin: 0,
   });
-  s.addNotes("The primitives are domain-agnostic. A dispute agent, a benefit activation agent, a servicing agent — each needs the same four things. Only the action schema and the outcome scorer change per domain.");
+  s.addNotes("The primitives are domain-agnostic. A dispute agent, a benefit activation agent, a servicing agent - each needs the same four things. Only the action schema and the outcome scorer change per domain.");
 }
 
 // ============================================================
@@ -559,7 +559,7 @@ function kicker(s, text, dark) {
 
   const done = [
     "15 MCP tools live and verified over the protocol, across desktop and CLI MCP clients",
-    "Mandate gate and kill switch enforced server-side — tested, and they fail closed",
+    "Mandate gate and kill switch enforced server-side - tested, and they fail closed",
     "14 months of market history ingested; simulator reproducible from the repo",
     "Journal actively scoring live decisions with full reasoning retained",
   ];
@@ -594,7 +594,7 @@ function kicker(s, text, dark) {
     color: SLATE, lineSpacing: 17, margin: 0,
   });
 
-  s.addText("NEXT — PROTOTYPE ROUND", {
+  s.addText("NEXT - PROTOTYPE ROUND", {
     x: M, y: 5.1, w: 6, h: 0.3, fontFace: B, fontSize: 11, bold: true,
     charSpacing: 2, color: SLATE, margin: 0,
   });
@@ -630,7 +630,7 @@ function kicker(s, text, dark) {
     x: M, y: 1.9, w: 11.5, h: 1.7, fontFace: H, fontSize: 36, bold: true,
     color: LIGHT, lineSpacing: 48, margin: 0,
   });
-  s.addText("finLM makes an agent's authority enforceable, its reasoning auditable, and its judgment measurable — so a financial institution can actually deploy one.", {
+  s.addText("finLM makes an agent's authority enforceable, its reasoning auditable, and its judgment measurable - so a financial institution can actually deploy one.", {
     x: M, y: 3.8, w: 10.5, h: 0.9, fontFace: B, fontSize: 16,
     color: ICE, lineSpacing: 26, margin: 0,
   });

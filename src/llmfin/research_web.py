@@ -1,7 +1,7 @@
 """
 research_web.py
 ───────────────
-The "why is it moving" layer — news/catalyst lookup via the Tavily search API.
+The "why is it moving" layer - news/catalyst lookup via the Tavily search API.
 
 This is the one job the LLM genuinely does better than pandas: a stock gapping
 4% on an earnings beat is a different trade than one gapping 4% on nothing.
@@ -32,7 +32,7 @@ def research_symbol(
     """Search recent news for an NSE symbol. Returns Tavily's synthesized
     answer plus the top sources, ready for the LLM to weigh.
 
-    Pass change_pct/move_date from the scanner hit when you have them — a
+    Pass change_pct/move_date from the scanner hit when you have them - a
     query like 'Relaxo Footwears share price surges 20% 2026-07-17 reason'
     retrieves far better than a generic 'why moving' search.
     """
@@ -41,7 +41,7 @@ def research_symbol(
         return {
             "error": (
                 "TAVILY_API_KEY is not set. Get a free key at https://tavily.com "
-                "and add it to your .env — the research_symbol tool needs it. "
+                "and add it to your .env - the research_symbol tool needs it. "
                 "The scanner and signal tools work without it."
             )
         }
@@ -52,7 +52,7 @@ def research_symbol(
         query = f"{name} share price {verb} {abs(change_pct):.0f}% {move_date} NSE reason news".strip()
     else:
         query = f"{name} NSE stock news why moving"
-    # General index + advanced depth beats topic:"news" for Indian mid-caps —
+    # General index + advanced depth beats topic:"news" for Indian mid-caps -
     # the news vertical has thin coverage outside large caps and returns
     # unrelated big-cap stories instead (verified: RELAXO +20% day was
     # invisible on topic:news, fully covered on general).

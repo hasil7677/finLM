@@ -1,17 +1,17 @@
 """
 risk.py
 ───────
-Server-side risk gate — the Vibe-Trading "mandate" pattern.
+Server-side risk gate - the Vibe-Trading "mandate" pattern.
 
 The old `confirmed=true` flag was theater: the LLM sets that flag itself, so
 it guards nothing. Real guardrails live HERE, in code the model cannot talk
 its way around:
 
-  • risk_limits.json  — a mandate the USER writes (order caps, daily limits,
+  • risk_limits.json  - a mandate the USER writes (order caps, daily limits,
     product allowlist). Missing file ⇒ orders are blocked, not defaulted open.
-  • KILL_SWITCH       — touch a file named KILL_SWITCH next to the mandate
+  • KILL_SWITCH       - touch a file named KILL_SWITCH next to the mandate
     (or in LLMFIN_DATA_DIR) and every order is rejected until it's deleted.
-  • Daily order count — tracked in SQLite, enforced per calendar day.
+  • Daily order count - tracked in SQLite, enforced per calendar day.
 
 `place_order` calls check_order() and refuses to reach Kite unless it passes.
 """
@@ -40,7 +40,7 @@ KILL_SWITCH_LOCATIONS = [
 # A BUY LIMIT/SL fills at or below its price, so the caller-supplied price is a
 # safe basis for the order-value cap. Everything else (MARKET, SL-M, and every
 # SELL) fills at whatever the market says, so a caller-supplied price there is
-# an unverified claim — and the caller is the LLM.
+# an unverified claim - and the caller is the LLM.
 PRICE_BINDING_ORDER_TYPES = {"LIMIT", "SL"}
 
 DEFAULT_MANDATE_EXAMPLE = {
@@ -77,10 +77,10 @@ def _norm_symbol(s: Any) -> str:
     A blocklist is only as good as the comparison behind it, and a symbol is
     attacker-controlled text. Three classes of evasion have to die here:
 
-      "RELIANCE " / "RELI ANCE"  — ordinary whitespace
-      "YES​BANK"            — zero-width space, word joiner, soft hyphen:
+      "RELIANCE " / "RELI ANCE"  - ordinary whitespace
+      "YES​BANK"            - zero-width space, word joiner, soft hyphen:
                                    invisible in a diff, defeats ==
-      "ＹＥＳ..."    — full-width forms, which .upper() leaves
+      "ＹＥＳ..."    - full-width forms, which .upper() leaves
                                    full-width so they never match ASCII
 
     NFKC folds compatibility forms (full-width → ASCII); stripping the space,
@@ -166,7 +166,7 @@ def check_order(
 ) -> RiskVerdict:
     """Validate an order against the user's mandate. Fails closed.
 
-    `est_price_source` says where `est_price` came from — "market" (a live
+    `est_price_source` says where `est_price` came from - "market" (a live
     quote), "limit_price" (supplied by the caller, i.e. the LLM), or
     "unavailable". The gate trusts a caller-supplied price only where the
     order type makes it a real ceiling on the fill; see
@@ -176,7 +176,7 @@ def check_order(
 
     ks = kill_switch_active()
     if ks:
-        return RiskVerdict(False, [f"KILL SWITCH is active at {ks} — delete the file to re-enable trading."])
+        return RiskVerdict(False, [f"KILL SWITCH is active at {ks} - delete the file to re-enable trading."])
 
     try:
         mandate = load_mandate()
@@ -194,7 +194,7 @@ def check_order(
             False,
             [
                 f"No risk mandate found at {RISK_FILE.resolve()}. Orders are blocked until the USER "
-                "creates it (this is deliberate — the mandate is your consent, written outside the LLM). "
+                "creates it (this is deliberate - the mandate is your consent, written outside the LLM). "
                 f"Example content: {json.dumps(DEFAULT_MANDATE_EXAMPLE)}"
             ],
         )
@@ -241,7 +241,7 @@ def check_order(
 
     # A caller-supplied `price` only bounds the fill on a BUY LIMIT/SL. A
     # MARKET/SL-M order ignores it, and a SELL fills at the market however low
-    # the limit is — so trusting it there is exactly how a caller talks its way
+    # the limit is - so trusting it there is exactly how a caller talks its way
     # past the rupee caps.
     price_binds = order_type in PRICE_BINDING_ORDER_TYPES and transaction_type == "BUY"
     price_usable = (
@@ -260,16 +260,16 @@ def check_order(
         if est_price_source == "limit_price" and not price_binds:
             reasons.append(
                 f"Order value for a {transaction_type} {order_type} order cannot be verified from a "
-                "caller-supplied price — that price does not bound the fill. A live quote is required."
+                "caller-supplied price - that price does not bound the fill. A live quote is required."
             )
         elif est_price is None:
             reasons.append(
-                "Cannot verify order value against the mandate's rupee caps — no price available. "
+                "Cannot verify order value against the mandate's rupee caps - no price available. "
                 "Pass a limit price or ensure live quotes are reachable."
             )
         else:
             reasons.append(
-                f"Price estimate {est_price!r} is not a positive finite number — "
+                f"Price estimate {est_price!r} is not a positive finite number - "
                 "cannot verify order value against the mandate's rupee caps."
             )
 

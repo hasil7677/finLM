@@ -6,9 +6,9 @@ that are actually worth a look today, using deterministic math over the local
 bhavcopy DB. No broker API, no LLM, no subscription.
 
 Filter chain (classic intraday-desk recipe):
-  1. Liquidity floor   — price, average volume, turnover
-  2. Activity          — gap % vs previous close, volume ratio vs 20-day avg
-  3. Rank              — by a composite of |gap| and volume ratio
+  1. Liquidity floor   - price, average volume, turnover
+  2. Activity          - gap % vs previous close, volume ratio vs 20-day avg
+  3. Rank              - by a composite of |gap| and volume ratio
 
 The LLM's job starts AFTER this: explain WHY the survivors are moving
 (research_symbol) and rank them into a watchlist.
@@ -35,7 +35,7 @@ class ScanHit:
     volume: int
     volume_ratio: float     # today's volume / 20-day average
     turnover_cr: float      # turnover in ₹ crore
-    range_pct: float        # (high-low)/prev_close — intraday travel
+    range_pct: float        # (high-low)/prev_close - intraday travel
     score: float
 
 
@@ -77,7 +77,7 @@ def scan_market(
     elif direction == "down":
         df = df[df["change_pct"] < 0]
 
-    # 3. Rank — favour big participation over big % move (vol ratio capped so
+    # 3. Rank - favour big participation over big % move (vol ratio capped so
     # one illiquid spike can't dominate).
     df["score"] = df["change_pct"].abs() * 0.5 + df["volume_ratio"].clip(upper=10) * 1.0
 

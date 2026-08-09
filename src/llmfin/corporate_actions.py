@@ -6,7 +6,7 @@ Heuristic split/bonus back-adjustment, shared by the backtest engine
 
 Raw NSE bhavcopy has no corporate-action adjustment: a stock's close and
 prev_close are whatever literally printed that day. A 1:2 split makes the
-close halve overnight with nothing else changing — which looks exactly like
+close halve overnight with nothing else changing - which looks exactly like
 a -50% crash to anything that reads prev_close, a trailing average, or an
 indicator window spanning the event. That's a false "mover" in the live
 scanner and a corrupted history window in the backtest.
@@ -17,17 +17,17 @@ moves well inside this range). A suspect ratio is only back-adjusted when
 ALL THREE hold:
   1. It's close (in log space) to a common split/bonus/rights ratio.
   2. Event-day volume isn't a panic-scale spike vs its trailing 20-day
-     average (CA_MAX_VOLUME_MULT) — a real crash can coincidentally land
+     average (CA_MAX_VOLUME_MULT) - a real crash can coincidentally land
      near a clean ratio (e.g. FINANTECH's Aug-2013 NSEL-scam crash was
      close to 1/3), but trades at 10-1000x normal volume, not the 2-6x a
      mechanical split shows.
-  3. It's isolated — no other suspect ratio for the same symbol within
+  3. It's isolated - no other suspect ratio for the same symbol within
      CA_CLUSTER_WINDOW trading days. A name mid-crisis (e.g. JETAIRWAYS'
      2019 bankruptcy death-spiral) can pass both checks above on a single
      bad day whose own volume baseline is already crisis-elevated; real
      splits are one-off events, not part of a cluster of anomalies.
 All three guards were added after concrete false-positive misfires found
-while backtesting NSE 2010-2020 — see that period's diagnostic notes.
+while backtesting NSE 2010-2020 - see that period's diagnostic notes.
 """
 
 from __future__ import annotations
@@ -49,7 +49,7 @@ def adjust_corporate_actions(panel: pd.DataFrame) -> tuple[pd.DataFrame, list[di
     `panel` needs columns: symbol, date, open, high, low, close, prev_close,
     volume (extra columns pass through untouched). Returns the adjusted
     panel plus a log of every symbol/date it touched (and any anomalies it
-    flagged but declined to adjust) — inspect this log when diagnosing a
+    flagged but declined to adjust) - inspect this log when diagnosing a
     misfire, it's the main way to catch one.
     """
     with np.errstate(divide="ignore", invalid="ignore"):

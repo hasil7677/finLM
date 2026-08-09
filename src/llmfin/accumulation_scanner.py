@@ -3,41 +3,41 @@ accumulation_scanner.py
 ────────────────────────
 Long-side discovery: the deliberate opposite of scan_market.
 
-scan_market finds explosions — big single-day gap/volume moves. §6's
+scan_market finds explosions - big single-day gap/volume moves. §6's
 backtest evidence (README.md) says explosions have no long edge: chasing
 them loses in every configuration tested across 11 years of NSE history: the
 only edge in that candidate stream is fading them (a sell). §7 names the fix
-directly: a long strategy needs a DIFFERENT screen — rising volume, tight
-range, no spike — the quiet phase that in theory precedes a move, rather
+directly: a long strategy needs a DIFFERENT screen - rising volume, tight
+range, no spike - the quiet phase that in theory precedes a move, rather
 than the day of the move itself.
 
 Filter chain:
-  1. Liquidity floor       — same shape as scan_market (price/volume/turnover)
-  2. No spike               — today's |change%| AND the largest single-day
+  1. Liquidity floor       - same shape as scan_market (price/volume/turnover)
+  2. No spike               - today's |change%| AND the largest single-day
                                |change%| anywhere in the lookback window stay
                                small. This is explicitly NOT a mover scan; if
                                anything in the window looks like scan_market
                                would flag it, this screen excludes the name.
-  3. Rising participation   — recent average volume clears the prior baseline
+  3. Rising participation   - recent average volume clears the prior baseline
                                average by min_volume_ratio, AND no single day
                                in the recent window accounts for more than
                                max_single_day_volume_share of that window's
-                               total volume — otherwise "rising volume" is one
+                               total volume - otherwise "rising volume" is one
                                big print, not real accumulation.
-  4. Tight range             — average daily (high-low)/prev_close over the
+  4. Tight range             - average daily (high-low)/prev_close over the
                                lookback window stays under max_avg_range_pct.
-  5. Steady mild uptrend      — close above EMA20 above EMA50 (basic healthy
+  5. Steady mild uptrend      - close above EMA20 above EMA50 (basic healthy
                                structure, not a falling knife), but the
                                cumulative return over the lookback window is
-                               small and positive — a name that already ran
+                               small and positive - a name that already ran
                                is scan_market's job, not this one.
-  6. Rank                     — by participation increase, tie-broken by
+  6. Rank                     - by participation increase, tie-broken by
                                tighter range (more conviction it's genuinely
                                quiet, not just less liquid).
 
-IMPORTANT — this is an UNVALIDATED hypothesis screen. §6's alpha evidence
+IMPORTANT - this is an UNVALIDATED hypothesis screen. §6's alpha evidence
 only covers the mover-fade / mover-chase axis; nothing in this module has
-been backtested. Treat hits as research candidates, not a proven edge — do
+been backtested. Treat hits as research candidates, not a proven edge - do
 not present this with the confidence of the mover-fade result until it has
 been through the same point-in-time backtest loop that result went through.
 """
@@ -85,7 +85,7 @@ def scan_quiet_accumulation(
 ) -> list[AccumulationHit]:
     """Screen the whole NSE universe for quiet-accumulation candidates (see
     module docstring for the full filter chain and its rationale). Uses the
-    local bhavcopy DB — run ingest_market_data first if it errors."""
+    local bhavcopy DB - run ingest_market_data first if it errors."""
     df, latest = _recent_panel(CALENDAR_DAYS_BACK)
     df = df[df["prev_close"] > 0].copy()
     if df.empty:
@@ -138,7 +138,7 @@ def scan_quiet_accumulation(
     if snap.empty:
         return []
 
-    # 6. Rank — favour bigger participation increase, tie-broken by tighter range.
+    # 6. Rank - favour bigger participation increase, tie-broken by tighter range.
     snap = snap.assign(score=snap["volume_ratio"] * 2.0 - snap["avg_range_pct"] * 0.3)
     snap = snap.sort_values("score", ascending=False).head(limit)
 

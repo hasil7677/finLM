@@ -14,14 +14,14 @@ being false. So the assertions here are almost all "REJECTED", and the handful
 of "allowed" tests exist to prove the gate isn't trivially blocking everything.
 
 Attack classes:
-  A. Fail-closed        — no mandate, unreadable mandate
-  B. Kill switch        — precedence over an otherwise-valid order
-  C. Order-value evasion— lying about price to shrink the estimated value
-  D. Quantity abuse     — negative / zero / fractional quantities
-  E. Symbol-list evasion— case and whitespace tricks against allow/blocklists
-  F. Privilege escalation— products, exchanges, sides the mandate excludes
+  A. Fail-closed        - no mandate, unreadable mandate
+  B. Kill switch        - precedence over an otherwise-valid order
+  C. Order-value evasion- lying about price to shrink the estimated value
+  D. Quantity abuse     - negative / zero / fractional quantities
+  E. Symbol-list evasion- case and whitespace tricks against allow/blocklists
+  F. Privilege escalation- products, exchanges, sides the mandate excludes
   G. Daily cap
-  H. Thesis guard       — no LLM-settable bypass parameter exists at all
+  H. Thesis guard       - no LLM-settable bypass parameter exists at all
 """
 
 from __future__ import annotations
@@ -123,7 +123,7 @@ def test_kill_switch_overrides_a_valid_mandate(mandated):
 
 
 def test_kill_switch_checked_before_mandate(gate):
-    """Kill switch must win even when no mandate exists — the user should see
+    """Kill switch must win even when no mandate exists - the user should see
     the switch they flipped, not a message about a missing file."""
     (gate / "KILL_SWITCH").write_text("")
     assert "KILL SWITCH" in order().reasons[0]
@@ -134,7 +134,7 @@ def test_kill_switch_checked_before_mandate(gate):
 def test_market_order_cannot_be_valued_from_caller_supplied_price(mandated):
     """THE bypass. `price` is ignored by the exchange on a MARKET order, so a
     model that sends order_type=MARKET with price=1.0 was previously valued at
-    quantity x 1.0 — sailing under the rupee cap while executing at market."""
+    quantity x 1.0 - sailing under the rupee cap while executing at market."""
     verdict = order(quantity=100, est_price=1.0, order_type="MARKET",
                     est_price_source="limit_price")
     assert not verdict.allowed
@@ -212,8 +212,8 @@ def test_quantity_cap_still_enforced(mandated):
 
 @pytest.mark.parametrize("spelling", [
     "YESBANK", "yesbank", "YesBank", " YESBANK", "YESBANK ", "YES BANK",
-    "YES BANK",   # non-breaking space
-    "YES​BANK",   # zero-width space — invisible in any diff or log
+    "YES BANK",   # non-breaking space
+    "YES​BANK",   # zero-width space - invisible in any diff or log
     "YES⁠BANK",   # word joiner
     "YES­BANK",   # soft hyphen
     "ＹＥＳＢＡＮＫ",  # full-width YESBANK
@@ -224,7 +224,7 @@ def test_blocklist_cannot_be_evaded_by_case_whitespace_or_unicode(mandated, spel
 
     Plain `.upper()` plus `.split()` is not enough: a zero-width space is not
     whitespace to Python, and `.upper()` on full-width characters returns
-    full-width characters — so both slip past a blocklist entry in ASCII while
+    full-width characters - so both slip past a blocklist entry in ASCII while
     looking identical to a human reading the log."""
     verdict = order(symbol=spelling)
     assert not verdict.allowed
@@ -249,7 +249,7 @@ def test_product_outside_the_mandate_is_rejected(mandated, product):
 
 @pytest.mark.parametrize("exchange", ["BSE", "NFO", "MCX", "nse"])
 def test_exchange_outside_the_mandate_is_rejected(mandated, exchange):
-    """NFO is the derivatives segment — the escalation that turns a ₹50k cash
+    """NFO is the derivatives segment - the escalation that turns a ₹50k cash
     mandate into unbounded notional exposure."""
     assert not order(exchange=exchange).allowed
 
@@ -273,7 +273,7 @@ def test_daily_order_cap_is_enforced(mandated):
 
 
 def test_aggregate_daily_value_cap_is_enforced(gate):
-    """Per-order caps don't bound daily exposure on their own — each ₹49,999
+    """Per-order caps don't bound daily exposure on their own - each ₹49,999
     order passes a ₹50,000 cap individually. max_daily_value_inr sums the
     ledger so the total is capped too, not just each step."""
     (gate / "risk_limits.json").write_text(
@@ -317,11 +317,11 @@ FORBIDDEN_PARAMS = {
 
 
 def test_place_order_exposes_no_bypass_parameter():
-    """CLAUDE.md §5: 'Never reintroduce an LLM-settable override; that single
+    """README.md §5: 'Never reintroduce an LLM-settable override; that single
     property is the project's thesis.' This test is that sentence, enforced.
 
     It fails the moment someone adds a convenience flag that lets the model
-    vouch for itself — which is how the old `confirmed=true` theatre got in."""
+    vouch for itself - which is how the old `confirmed=true` theatre got in."""
     server = pytest.importorskip("llmfin.server")
     params = set(inspect.signature(server.place_order).parameters)
     assert not (params & FORBIDDEN_PARAMS), (
@@ -336,8 +336,8 @@ def test_check_order_exposes_no_bypass_parameter():
 
 def test_mandate_is_never_written_by_this_package():
     """The mandate is the user's consent, originating outside the conversation.
-    No code path in llmfin may create it — otherwise the model can grant itself
-    permission. Guards CLAUDE.md §3."""
+    No code path in llmfin may create it - otherwise the model can grant itself
+    permission. Guards README.md §3."""
     import pathlib
 
     src = pathlib.Path(risk_mod.__file__).parent
@@ -355,7 +355,7 @@ def test_mandate_is_never_written_by_this_package():
 # ── End-to-end: the same attacks through the actual MCP tool ────────────────
 
 class FakeKite:
-    """Minimal Kite stand-in. Records anything that reaches the broker —
+    """Minimal Kite stand-in. Records anything that reaches the broker -
     if `placed` is non-empty after an attack, the gate was bypassed."""
 
     VARIETY_REGULAR = "regular"

@@ -91,7 +91,7 @@ def analyse(label, pairs):
     print(f"   => H3 {'FIRES' if h3 else 'fails'}")
 
     verdict = "H1 monotonic decay" if h1 else "H2 structural break" if h2 else \
-              "H3 unusual live window" if h3 else "H4 none — decay unexplained"
+              "H3 unusual live window" if h3 else "H4 none - decay unexplained"
     print(f"\n   VERDICT: {verdict}")
     return {"n": n, "spearman_r": round(r, 3), "spearman_p": round(p, 4),
             "ols_slope": round(slope, 4), "loo_all_negative": loo_ok,
@@ -107,7 +107,7 @@ res_no20 = analyse("WITHOUT 2020 (COVID sensitivity)", [(y, a) for y, a in tests
 
 print(f"\n{'='*66}")
 if res_all["verdict"] != res_no20["verdict"]:
-    final = "INCONCLUSIVE — the two COVID treatments disagree (pre-registered rule)"
+    final = "INCONCLUSIVE - the two COVID treatments disagree (pre-registered rule)"
 else:
     final = res_all["verdict"]
 print(f"FINAL: {final}")

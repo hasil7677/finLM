@@ -4,7 +4,7 @@ batch_runner.py
 Standalone morning batch: scan the market, research the movers, print a report.
 Designed for a scheduler (Task Scheduler / cron) before market open.
 
-Works with ZERO credentials — scanner and research run off the local bhavcopy
+Works with ZERO credentials - scanner and research run off the local bhavcopy
 DB. With a Kite session, research upgrades to live data automatically.
 
 Usage
@@ -43,7 +43,7 @@ def _strongest(r: ResearchResult):
 
 def _render_report(results: list[ResearchResult]) -> None:
     as_of = datetime.now(tz=timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
-    console.rule(f"[bold cyan]llmfin — Market Research Report  •  {as_of}[/bold cyan]")
+    console.rule(f"[bold cyan]llmfin - Market Research Report  •  {as_of}[/bold cyan]")
     console.print()
 
     table = Table(
@@ -68,10 +68,10 @@ def _render_report(results: list[ResearchResult]) -> None:
         table.add_row(
             r.symbol,
             f"Rs {snap.close:,.2f}",
-            cells.get("trend_following", "—"),
-            cells.get("mean_reversion", "—"),
-            f"{snap.rsi_14:.1f}" if snap.rsi_14 is not None else "—",
-            f"{snap.percent_change_1d:+.2f}%" if snap.percent_change_1d is not None else "—",
+            cells.get("trend_following", "-"),
+            cells.get("mean_reversion", "-"),
+            f"{snap.rsi_14:.1f}" if snap.rsi_14 is not None else "-",
+            f"{snap.percent_change_1d:+.2f}%" if snap.percent_change_1d is not None else "-",
             r.data_source,
         )
 
@@ -80,14 +80,14 @@ def _render_report(results: list[ResearchResult]) -> None:
 
     actionable = [r for r in results if any(s.direction != "HOLD" and abs(s.conviction) >= 0.5 for s in r.signals)]
     if actionable:
-        console.rule("[bold yellow]Actionable — Reasoning & Trade Plans[/bold yellow]")
+        console.rule("[bold yellow]Actionable - Reasoning & Trade Plans[/bold yellow]")
         for r in actionable:
             for s in r.signals:
                 if s.direction == "HOLD" or abs(s.conviction) < 0.5:
                     continue
                 style = SIGNAL_STYLE[s.direction]
                 console.print(
-                    f"\n[bold]{r.symbol}[/bold] · {s.model} — [{style}]{s.direction}[/{style}] "
+                    f"\n[bold]{r.symbol}[/bold] · {s.model} - [{style}]{s.direction}[/{style}] "
                     f"(conviction {s.conviction:+.2f})"
                 )
                 for reason in s.reasoning:
@@ -116,26 +116,26 @@ def _save_json(results: list[ResearchResult]) -> None:
 def run_batch(watchlist_path: str | None = None, limit: int = 12) -> list[ResearchResult]:
     kite = get_kite_client_or_none()
     if kite:
-        console.print("[green]Zerodha session found — using live Kite data.[/green]")
+        console.print("[green]Zerodha session found - using live Kite data.[/green]")
     else:
-        console.print("[dim]No Zerodha session — using free local bhavcopy DB.[/dim]")
+        console.print("[dim]No Zerodha session - using free local bhavcopy DB.[/dim]")
 
     if watchlist_path:
         items = json.loads(Path(watchlist_path).read_text())
         symbols = [i["symbol"] if isinstance(i, dict) else i for i in items]
-        console.print(f"[cyan]Researching fixed watchlist ({len(symbols)} symbols)…[/cyan]")
+        console.print(f"[cyan]Researching fixed watchlist ({len(symbols)} symbols)...[/cyan]")
     else:
-        console.print("[cyan]Scanning market for today's movers…[/cyan]")
+        console.print("[cyan]Scanning market for today's movers...[/cyan]")
         hits = scan_market(limit=limit)
         symbols = [h.symbol for h in hits]
         if not symbols:
-            console.print("[yellow]Scanner returned nothing — is the DB ingested? Run llmfin-ingest.[/yellow]")
+            console.print("[yellow]Scanner returned nothing - is the DB ingested? Run llmfin-ingest.[/yellow]")
             return []
         console.print(f"  Movers: [bold]{', '.join(symbols)}[/bold]")
 
     results: list[ResearchResult] = []
     for idx, sym in enumerate(symbols, 1):
-        console.print(f"  [{idx}/{len(symbols)}] Researching [bold]{sym}[/bold] …", end="\r")
+        console.print(f"  [{idx}/{len(symbols)}] Researching [bold]{sym}[/bold] ...", end="\r")
         try:
             results.append(research_instrument(symbol=sym, kite=kite))
         except Exception as exc:

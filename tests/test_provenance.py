@@ -37,7 +37,7 @@ def fake_db(tmp_path) -> Path:
 
 
 def test_db_fingerprint_identifies_the_snapshot_not_just_the_path(fake_db):
-    """Path + filename is not identity — two different snapshots live at the
+    """Path + filename is not identity - two different snapshots live at the
     same path over time. Rows, date range and digest are what pin it."""
     fp = provenance.db_fingerprint(fake_db)
     assert fp["rows"] == 3
@@ -102,7 +102,7 @@ def test_artifact_git_sha_matches_head(fake_db, tmp_path):
 
 
 def test_each_run_gets_its_own_artifact(fake_db, tmp_path):
-    """Artifacts accumulate rather than overwrite — the history of what was run
+    """Artifacts accumulate rather than overwrite - the history of what was run
     is the thing that was missing."""
     out = tmp_path / "artifacts"
     a = provenance.write_artifact("backtest", {}, {"n": 1}, fake_db, out)

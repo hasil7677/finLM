@@ -5,8 +5,6 @@
     "sha": "c5a838c6efa45a2cba02f5d833a41ed973141803",
     "dirty": true,
     "dirty_files": [
-      "M CLAUDE.md",
-      " M README.md",
       " M SUBMISSION.md",
       " M deck_build.js",
       " M finLM_CodeStreet2026.pptx",

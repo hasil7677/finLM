@@ -5,12 +5,12 @@ Backfills pre-2024 NSE bhavcopy history into a SEPARATE local database, for
 backtesting eras the live pipeline can't reach.
 
 `data_store.py` reads NSE's UDiFF bhavcopy format, which has only existed
-since July 2024 — it 404s for anything older. NSE's older per-day archive
+since July 2024 - it 404s for anything older. NSE's older per-day archive
 (the classic "cm...bhav.csv.zip" format) covers 2010-2020 fine but lives at a
 different URL with a different column schema, hence this separate module.
 
 Deliberately writes to its own DB file (default `market_historical.db`, next
-to the live `market.db`) instead of merging into the live store — the live DB
+to the live `market.db`) instead of merging into the live store - the live DB
 backs real trading decisions (journal, risk gate) and has no business being
 mixed with a decade of backfilled history. `backtest.py --db <path>` points
 at whichever store you want to test against.
@@ -121,7 +121,7 @@ def fetch_bhavcopy_old(day: date, session: Optional[requests.Session] = None) ->
 
     missing = [c for c in _COLMAP if c not in df.columns]
     if missing:
-        raise ValueError(f"Old bhavcopy format changed for {day} — missing columns: {missing}")
+        raise ValueError(f"Old bhavcopy format changed for {day} - missing columns: {missing}")
 
     df = df[list(_COLMAP)].rename(columns=_COLMAP)
     df = df[df["series"].isin(["EQ", "BE"])].copy()  # cash-equity series only, same as data_store

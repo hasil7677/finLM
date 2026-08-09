@@ -1,1 +1,1 @@
-"""llmfin — MCP-based trading intelligence layer."""
+"""llmfin - MCP-based trading intelligence layer."""

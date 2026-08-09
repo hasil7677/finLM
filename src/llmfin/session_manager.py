@@ -49,7 +49,7 @@ API_SECRET: str = os.getenv("KITE_API_SECRET", "")
 # Helpers
 # ---------------------------------------------------------------------------
 
-# Kite access tokens expire on the IST trading-day boundary, not UTC —
+# Kite access tokens expire on the IST trading-day boundary, not UTC -
 # compare dates in IST or a token minted after 6:30 PM ET looks "fresh" the
 # next morning when it is actually dead.
 IST = timezone(timedelta(hours=5, minutes=30))
@@ -68,11 +68,11 @@ def _load_token() -> Optional[dict]:
         saved_date = data.get("date")
         today = _ist_today()
         if saved_date != today:
-            logger.info("Cached token is from %s — expired (today is %s).", saved_date, today)
+            logger.info("Cached token is from %s - expired (today is %s).", saved_date, today)
             return None
         return data
     except (json.JSONDecodeError, KeyError):
-        logger.warning("Corrupted token file at %s — ignoring.", TOKEN_FILE)
+        logger.warning("Corrupted token file at %s - ignoring.", TOKEN_FILE)
         return None
 
 
@@ -146,7 +146,7 @@ def get_kite_client() -> KiteConnect:
 
 def get_kite_client_or_none() -> Optional[KiteConnect]:
     """Like get_kite_client(), but returns None instead of raising when no
-    credentials/session exist — used by tools that can fall back to the free
+    credentials/session exist - used by tools that can fall back to the free
     local bhavcopy DB."""
     try:
         return get_kite_client()

@@ -1,7 +1,7 @@
 """
 journal.py
 ──────────
-Decision journal + EOD review — the feedback loop that separates an
+Decision journal + EOD review - the feedback loop that separates an
 intelligence layer from an indicator toy.
 
 Every pick is logged WITH the reasoning at decision time. eod_review then
@@ -100,7 +100,7 @@ def _score_decision(row: sqlite3.Row) -> tuple[Optional[str], Optional[float]]:
     direction = row["direction"]
 
     if direction not in ("BUY", "SELL"):
-        # AVOID calls: outcome is what you dodged — % move since the call.
+        # AVOID calls: outcome is what you dodged - % move since the call.
         pct = (last_close - entry) / entry * 100
         return "avoided", round(pct, 2)
 

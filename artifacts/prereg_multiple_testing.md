@@ -1,14 +1,14 @@
-# Pre-registration — multiple-testing correction for the anomaly family
+# Pre-registration - multiple-testing correction for the anomaly family
 
 **Written 2026-08-09, before running any correction.** Committed so the stopping
 rule cannot be revised after seeing the answer. Same discipline as
-`prereg_breadth.py`, applied to *scope* rather than to a hypothesis — the failure
+`prereg_breadth.py`, applied to *scope* rather than to a hypothesis - the failure
 mode here is not a wrong result, it is an infinite regress of robustness checks
 that never terminates.
 
 ## The problem
 
-CLAUDE.md §6b reports 11 anomalies × 3 universe tiers = **33 tests**, all
+README.md reports 11 anomalies × 3 universe tiers = **33 tests**, all
 uncorrected. At α = 0.05 roughly 1.7 significant results are expected from pure
 noise. Several cells sit near |t| = 2. The reported findings may be nothing.
 
@@ -28,7 +28,7 @@ noise. Several cells sit near |t| = 2. The reported findings may be nothing.
    distribution. This answers "does ANY anomaly survive as a set", which is the
    question that matters and is not answered by per-test correction.
 
-## Stopping rule — binding
+## Stopping rule - binding
 
 - If **0 anomalies** survive BH at q = 0.10 in the primary family: **report the
   null and stop.** §6b is rewritten as a null result. No block bootstrap, no
@@ -36,10 +36,10 @@ noise. Several cells sit near |t| = 2. The reported findings may be nothing.
   additional universe tiers. The finding becomes "these effects do not survive
   multiple-testing correction on this sample", which is a real and publishable
   finding.
-- If **1–2 survive**: report them as surviving, with the bootstrap max-|t|
+- If **1-2 survive**: report them as surviving, with the bootstrap max-|t|
   p-value alongside. Do not add further robustness checks to strengthen them.
 - If **3 or more survive**: proceed to the factor attribution (task #3), which
-  is already planned and is the correct next control — not to more resampling.
+  is already planned and is the correct next control - not to more resampling.
 
 In every branch, the universe gradient and the conditional double-sort results
 are reported as-is, since they are descriptive rather than significance claims.
@@ -67,5 +67,5 @@ will likely reject both. I expect the bootstrap max-|t| test to be
 33 draws from a null produce.
 
 If that prediction is right, the honest headline for §6b becomes: *"No documented
-anomaly tested survives multiple-testing correction on Indian equities 2010–2020.
+anomaly tested survives multiple-testing correction on Indian equities 2010-2020.
 The apparent effects in the illiquid tier are consistent with sampling noise."*

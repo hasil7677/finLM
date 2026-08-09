@@ -27,7 +27,7 @@ def list_data_anomalies(db_path: Path = DB_PATH, symbol: Optional[str] = None) -
     corporate_actions.py) found across the full history in `db_path`: which
     ones it back-adjusted, and which ones it flagged but left alone, with the
     reason. Run this after ingesting new history, or whenever a scan/backtest
-    number looks suspicious, instead of writing a one-off script to check —
+    number looks suspicious, instead of writing a one-off script to check -
     a real split/bonus/rights issue in a symbol you follow should show up in
     `applied`; anything in `flagged` is either a genuine crash/crisis the
     guards correctly declined to touch, or a misfire worth tuning the guard

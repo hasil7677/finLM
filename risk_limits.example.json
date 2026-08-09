@@ -1,5 +1,5 @@
 {
-  "_comment": "Copy to risk_limits.json to enable order placement. This file is YOUR mandate — the LLM cannot create or edit it. Delete risk_limits.json or create a file named KILL_SWITCH to freeze all trading.",
+  "_comment": "Copy to risk_limits.json to enable order placement. This file is YOUR mandate - the LLM cannot create or edit it. Delete risk_limits.json or create a file named KILL_SWITCH to freeze all trading.",
   "max_order_value_inr": 50000,
   "max_daily_value_inr": 150000,
   "max_quantity_per_order": 100,

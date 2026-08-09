@@ -5,20 +5,20 @@ Sequences backtest.py's independent per-trade results into a single
 capital-constrained portfolio.
 
 backtest.py answers "does this signal have edge?" by scoring every trade as
-if it alone had the whole account — realistic for measuring alpha, but not
+if it alone had the whole account - realistic for measuring alpha, but not
 for measuring what an actual account does, since real capital and slots are
 finite and shared across whatever's open at once. This module answers the
 next question: run the same trades through one shared book and see what
 happens to the equity curve.
 
 What it adds on top of the per-trade engine:
-  • Risk-based position sizing — each trade risks `risk_per_trade_pct` of
+  • Risk-based position sizing - each trade risks `risk_per_trade_pct` of
     CURRENT equity (not a fixed starting amount), sized off that trade's own
     ATR-stop distance, capped at `max_position_pct` of equity so a very
     tight stop can't imply an absurd position.
-  • A concurrency cap — at most `max_concurrent_positions` open at once;
+  • A concurrency cap - at most `max_concurrent_positions` open at once;
     once full, new candidates are skipped, not force-fit.
-  • A correlation cap — before admitting a new trade, count how many
+  • A correlation cap - before admitting a new trade, count how many
     currently open positions have >= `corr_threshold` trailing daily-return
     correlation with it (computed from the same price panel the scan ran
     over); reject if that count is already at `max_correlated_cluster`. This
@@ -28,7 +28,7 @@ What it adds on top of the per-trade engine:
     (entries and exits processed in true chronological order, so freed
     capital/slots from an exit are available to same-day-or-later entries).
 
-Candidates are admitted in (entry_date, conviction desc) order — best ideas
+Candidates are admitted in (entry_date, conviction desc) order - best ideas
 each day get capital first when the book is constrained.
 """
 

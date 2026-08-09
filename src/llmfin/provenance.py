@@ -7,7 +7,7 @@ Why this exists: on 2026-08-09 the §6 headline backtest figures (935 trades,
 52.6% win, +1.2% alpha, PF 1.18) could not be reproduced. Eighteen parameter
 combinations were tested and none matched; the entry logic, filter constants and
 exit defaults were verified byte-identical to the commit that produced them. The
-numbers were not wrong because the code broke — they were unreconstructable
+numbers were not wrong because the code broke - they were unreconstructable
 because nothing linked them to the run that produced them. Someone read a number
 off a terminal and typed it into a markdown file.
 
@@ -18,7 +18,7 @@ environment (interpreter and library versions), and the full config, alongside
 the result.
 
 The point is to make this structural rather than remembered. `write_artifact` is
-called by the CLI unconditionally — there is no --no-artifact flag, because the
+called by the CLI unconditionally - there is no --no-artifact flag, because the
 2am-before-a-deadline version of anyone will use it.
 """
 
@@ -40,7 +40,7 @@ ARTIFACT_DIR = Path(os.getenv("LLMFIN_ARTIFACT_DIR", "artifacts"))
 
 def git_sha() -> dict[str, Any]:
     """Current commit and whether the tree is dirty. A dirty tree means the
-    SHA alone does not identify the code that ran — which is exactly the hole
+    SHA alone does not identify the code that ran - which is exactly the hole
     that produced the unreproducible headline."""
     repo = Path(__file__).resolve().parents[2]
 

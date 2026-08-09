@@ -15,7 +15,7 @@ Honesty rules (the whole point):
   • If the entry day opens beyond the stop (gap through), you're filled at
     the open, not at your stop price.
   • Every trade is also reported as ALPHA vs an equal-weight liquid-universe
-    benchmark over the same window — a "short edge" that is just the whole
+    benchmark over the same window - a "short edge" that is just the whole
     market falling is beta, not skill.
 
 Architecture: collect_events() runs the expensive part (scan + indicators +
@@ -55,7 +55,7 @@ MAX_FWD = 20  # forward days captured per event
 
 @dataclass
 class ScanConfig:
-    """Point-in-time scanner thresholds — identical to scanner.py's defaults,
+    """Point-in-time scanner thresholds - identical to scanner.py's defaults,
     but exposed as a config so old eras (much lower NSE turnover/prices) can
     be recalibrated without editing source."""
     min_price: float = 100.0
@@ -183,13 +183,13 @@ def _entry_fill(ev: dict, cfg: ExitConfig, sign: int) -> Optional[tuple[float, i
     """Returns (entry_price, fwd_index_of_entry_day) or None if never filled."""
     if cfg.entry_style == "open":
         return float(ev["fwd_open"][0]), 0
-    # Pullback: limit inside the move — below scan close for longs, above for
-    # shorts — wait up to pullback_wait days for the market to come to you.
+    # Pullback: limit inside the move - below scan close for longs, above for
+    # shorts - wait up to pullback_wait days for the market to come to you.
     limit = ev["scan_close"] - sign * cfg.pullback_atr * ev["atr"]
     n = min(cfg.pullback_wait, len(ev["fwd_open"]))
     for i in range(n):
         o = ev["fwd_open"][i]
-        if sign * (o - limit) <= 0:      # opened at/through the limit — filled at open
+        if sign * (o - limit) <= 0:      # opened at/through the limit - filled at open
             return float(o), i
         if sign == 1 and ev["fwd_low"][i] <= limit:
             return float(limit), i

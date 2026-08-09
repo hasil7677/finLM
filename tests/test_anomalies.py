@@ -4,10 +4,10 @@ test_anomalies.py
 The anomaly engine's whole value is that its numbers are trustworthy, so the
 tests here target the ways a cross-sectional backtest lies:
 
-  • lookahead — a characteristic that peeks at the return it is predicting
-  • sign errors — a flipped characteristic inverts the finding silently
-  • a broken harness — machinery that manufactures a spread from noise
-  • overstated significance — raw t-stats on overlapping returns
+  • lookahead - a characteristic that peeks at the return it is predicting
+  • sign errors - a flipped characteristic inverts the finding silently
+  • a broken harness - machinery that manufactures a spread from noise
+  • overstated significance - raw t-stats on overlapping returns
 
 The null test is the load-bearing one: if a randomised panel still produces a
 significant spread, nothing else in this module can be believed.
@@ -57,7 +57,7 @@ CFG = AnomalyConfig(min_history_months=2, min_names=50)
 # ── lookahead ───────────────────────────────────────────────────────────────
 
 def test_forward_return_is_strictly_next_month():
-    """`fwd` must be month t+1's return, never month t's — the single mistake
+    """`fwd` must be month t+1's return, never month t's - the single mistake
     that would make every anomaly here look tradeable."""
     p = synth_panel(n_symbols=60, n_months=6)
     p = p.sort_values(["symbol", "month"])
@@ -100,7 +100,7 @@ def test_characteristics_never_reference_the_holding_period():
         if both.sum() == 0:
             continue
         assert np.allclose(merged.loc[both, "_v"], got[both], equal_nan=True), (
-            f"{a.name} changes when future rows are removed — it peeks ahead"
+            f"{a.name} changes when future rows are removed - it peeks ahead"
         )
 
 
@@ -137,7 +137,7 @@ def test_null_panel_produces_no_spread():
 def test_zero_alpha_strategy_loses_exactly_its_costs():
     """Documents the hurdle every anomaly has to clear. At ~80% monthly turnover
     and 0.4% round-trip, a signal-free quintile long-short bleeds several
-    percent a year — that is how large an edge must be to survive."""
+    percent a year - that is how large an edge must be to survive."""
     p = synth_panel(n_symbols=120, n_months=120, seed=7, signal=0.0)
     st = evaluate(portfolio_sort(p, "c", CFG), CFG)
     assert st["ann_net_pct"] < -3.0
@@ -154,7 +154,7 @@ def test_planted_signal_is_recovered_with_the_right_sign():
 
 
 def test_sign_flip_inverts_the_result():
-    """A characteristic signed backwards must produce the mirror image — this is
+    """A characteristic signed backwards must produce the mirror image - this is
     what makes the `expect` note in the registry checkable."""
     p = synth_panel(n_symbols=120, n_months=120, seed=3, signal=0.04)
     a = evaluate(portfolio_sort(p, "c", CFG), CFG)
@@ -198,7 +198,7 @@ def test_thin_months_are_skipped_not_silently_included():
 
 def test_conditional_sort_recovers_a_signal_independent_of_the_control():
     """A planted signal orthogonal to the control variable must survive the
-    double sort — otherwise the control would be eating real effects."""
+    double sort - otherwise the control would be eating real effects."""
     from llmfin.anomalies import conditional_sort
     p = synth_panel(n_symbols=180, n_months=96, seed=5, signal=0.04)
     rng = np.random.default_rng(99)

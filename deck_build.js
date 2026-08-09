@@ -15,7 +15,7 @@ const B = "Calibri";
 
 const pres = new pptxgen();
 pres.layout = "LAYOUT_WIDE";  // 13.333 x 7.5
-pres.author = "Anish Naik";
+pres.author = "Hasil";
 pres.title = "finLM - Governance Layer for Financial Agents";
 
 const W = 13.333, HT = 7.5, M = 0.7;
@@ -71,7 +71,7 @@ function kicker(s, text, dark) {
     color: ICE, margin: 0,
   });
   s.addText(
-    "Enforced mandates · kill switch · reasoning audit trail · automated outcome scoring.\nDemonstrated on a market-analysis agent scored against real NSE prices. Paper decisions only — no order was ever placed.",
+    "Enforced mandates · kill switch · reasoning audit trail · automated outcome scoring.\nScored against real NSE prices. Paper decisions only — no order was ever placed.",
     { x: M, y: 4.15, w: 8.6, h: 1.0, fontFace: B, fontSize: 15,
       color: ICE, lineSpacing: 24, margin: 0 }
   );
@@ -83,7 +83,7 @@ function kicker(s, text, dark) {
     x: M, y: 5.55, w: 5.3, h: 0.62, fontFace: B, fontSize: 13,
     bold: true, color: LIGHT, align: "center", valign: "middle", margin: 0,
   });
-  s.addText("Anish Naik  ·  Idea Submission", {
+  s.addText("Hasil  ·  Idea Submission", {
     x: M, y: 6.45, w: 6, h: 0.3, fontFace: B, fontSize: 12,
     color: "7E93B8", margin: 0,
   });
@@ -647,7 +647,7 @@ function kicker(s, text, dark) {
     });
   });
 
-  s.addText("finLM  ·  Anish Naik  ·  CodeStreet 2026", {
+  s.addText("finLM  ·  Hasil  ·  CodeStreet 2026", {
     x: M, y: 6.3, w: 8, h: 0.4, fontFace: H, fontSize: 15, bold: true,
     color: LIGHT, margin: 0,
   });

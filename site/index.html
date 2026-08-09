@@ -1,0 +1,707 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>finLM - point-in-time equity research infrastructure for Indian markets</title>
+<meta name="description" content="16 years of NSE data, a deterministic analysis layer for LLMs, and a risk gate that was red-teamed until it broke. Findings, methodology, and the corrections.">
+<meta property="og:title" content="finLM">
+<meta property="og:description" content="Point-in-time equity research infrastructure for Indian markets. 16 years of NSE data, 120 tests, 0 orders placed.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23A8372A'/><path d='M18 74 L38 52 L56 62 L84 26' stroke='white' stroke-width='9' fill='none' stroke-linecap='square'/></svg>">
+<style>
+  :root{
+    --ground:#F3F5EF; --band:#E9ECE3; --ink:#171C18; --ink-2:#5B6259;
+    --rule:#CBD2C4; --accent:#A8372A; --verify:#3D6B4B; --plate:#FBFCF8;
+    --mono: ui-monospace,"Cascadia Mono","SF Mono","Roboto Mono",Menlo,Consolas,monospace;
+    --serif: Charter,"Bitstream Charter","Sitka Text",Cambria,"Iowan Old Style",Georgia,serif;
+    --sans: system-ui,"Segoe UI",-apple-system,"Helvetica Neue",Arial,sans-serif;
+    --measure:66ch;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --ground:#12140F; --band:#191C15; --ink:#E4E8DC; --ink-2:#98A190;
+      --rule:#2E332A; --accent:#E0705F; --verify:#74B48D; --plate:#171A13;
+    }
+  }
+  :root[data-theme="dark"]{
+    --ground:#12140F; --band:#191C15; --ink:#E4E8DC; --ink-2:#98A190;
+    --rule:#2E332A; --accent:#E0705F; --verify:#74B48D; --plate:#171A13;
+  }
+  :root[data-theme="light"]{
+    --ground:#F3F5EF; --band:#E9ECE3; --ink:#171C18; --ink-2:#5B6259;
+    --rule:#CBD2C4; --accent:#A8372A; --verify:#3D6B4B; --plate:#FBFCF8;
+  }
+
+  *,*::before,*::after{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--ground); color:var(--ink);
+    font-family:var(--serif); font-size:17px; line-height:1.62;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:var(--measure); margin-inline:auto; padding:0 22px}
+  a{color:inherit; text-underline-offset:3px; text-decoration-thickness:1px}
+  a:hover{color:var(--accent)}
+  :focus-visible{outline:2px solid var(--accent); outline-offset:3px}
+
+  /* ---- masthead ---- */
+  header{border-bottom:1px solid var(--rule)}
+  .masthead{
+    display:flex; align-items:baseline; justify-content:space-between;
+    gap:16px; padding:18px 0; flex-wrap:wrap;
+  }
+  .logo{font-family:var(--mono); font-weight:700; font-size:1.05rem; letter-spacing:-.02em}
+  .logo span{color:var(--accent)}
+  nav{display:flex; gap:18px; font-family:var(--sans); font-size:.72rem;
+      letter-spacing:.11em; text-transform:uppercase; color:var(--ink-2)}
+  nav a{text-decoration:none}
+
+  /* ---- hero ---- */
+  .hero{padding:56px 0 12px}
+  h1{
+    font-family:var(--mono); font-weight:700;
+    font-size:clamp(2.1rem,6.4vw,3.5rem); line-height:1.03;
+    letter-spacing:-.045em; margin:0 0 20px; text-wrap:balance;
+  }
+  .lede{font-size:1.16rem; color:var(--ink-2); margin:0 0 30px; max-width:60ch}
+  .lede strong{color:var(--ink); font-weight:600}
+
+  .eyebrow{
+    font-family:var(--sans); font-size:.7rem; letter-spacing:.16em;
+    text-transform:uppercase; color:var(--ink-2); margin:0 0 14px;
+  }
+
+  /* ---- full-bleed data plate ---- */
+  .plate{
+    background:var(--plate); border-block:1px solid var(--rule);
+    margin:38px 0; padding:30px 0;
+  }
+  .plate-title{
+    font-family:var(--sans); font-size:.72rem; letter-spacing:.14em;
+    text-transform:uppercase; color:var(--ink-2); margin:0 0 4px;
+  }
+  .plate-sub{font-size:.92rem; color:var(--ink-2); margin:0 0 20px}
+  figure{margin:0}
+  figcaption{
+    font-family:var(--sans); font-size:.78rem; color:var(--ink-2);
+    margin-top:14px; line-height:1.5;
+  }
+  canvas{display:block; width:100%; height:auto}
+
+  /* ---- sections ---- */
+  section{padding:14px 0}
+  h2{
+    font-family:var(--mono); font-size:1.42rem; font-weight:700;
+    letter-spacing:-.03em; margin:44px 0 6px; text-wrap:balance;
+  }
+  h2 .num{color:var(--accent); margin-right:.5ch}
+  h3{font-family:var(--mono); font-size:1.02rem; font-weight:700;
+     letter-spacing:-.02em; margin:30px 0 6px}
+  p{margin:0 0 16px}
+
+  /* ---- tables ---- */
+  .scroll{overflow-x:auto; margin:20px 0; border-block:1px solid var(--rule)}
+  table{border-collapse:collapse; width:100%; font-family:var(--sans);
+        font-size:.85rem; font-variant-numeric:tabular-nums}
+  th,td{padding:9px 14px 9px 0; text-align:left; white-space:nowrap}
+  thead th{
+    font-size:.68rem; letter-spacing:.1em; text-transform:uppercase;
+    color:var(--ink-2); font-weight:600; border-bottom:1px solid var(--rule);
+    padding-bottom:8px;
+  }
+  tbody tr+tr td{border-top:1px solid var(--rule)}
+  td.num{text-align:right; padding-right:22px}
+  .pos{color:var(--verify)} .neg{color:var(--accent)}
+  .live{font-family:var(--mono); font-weight:700}
+
+  /* ---- verdict rows ---- */
+  .ledger{list-style:none; margin:20px 0; padding:0}
+  .ledger li{
+    display:flex; gap:14px; align-items:baseline;
+    padding:11px 0; border-top:1px solid var(--rule);
+    font-family:var(--sans); font-size:.9rem;
+  }
+  .ledger li:last-child{border-bottom:1px solid var(--rule)}
+  .mark{
+    font-family:var(--mono); font-weight:700; font-size:.8rem;
+    letter-spacing:.04em; flex:0 0 4.2rem;
+  }
+  .mark.yes{color:var(--verify)} .mark.no{color:var(--accent)}
+
+  /* ---- correction block: the honesty made visual ---- */
+  .correction{
+    border-left:3px solid var(--accent); padding:2px 0 2px 18px; margin:22px 0;
+  }
+  .correction .was{
+    color:var(--ink-2); text-decoration:line-through;
+    text-decoration-color:var(--accent); text-decoration-thickness:1.5px;
+    font-family:var(--sans); font-size:.86rem;
+  }
+  .correction .now{
+    display:block; margin-top:5px; font-family:var(--sans);
+    font-size:.86rem; font-weight:600;
+  }
+
+  blockquote{
+    margin:24px 0; padding-left:18px; border-left:1px solid var(--rule);
+    color:var(--ink-2); font-style:italic;
+  }
+  code{font-family:var(--mono); font-size:.87em;
+       background:var(--band); padding:.1em .35em; border-radius:2px}
+  .stat{font-family:var(--mono); font-weight:700; letter-spacing:-.02em}
+
+  /* ---- footer ---- */
+  footer{
+    border-top:1px solid var(--rule); margin-top:54px; padding:26px 0 50px;
+    font-family:var(--sans); font-size:.8rem; color:var(--ink-2);
+  }
+  .cta{
+    display:inline-block; font-family:var(--mono); font-weight:700;
+    font-size:.9rem; border:1px solid var(--ink); padding:11px 20px;
+    text-decoration:none; margin:6px 10px 6px 0;
+  }
+  .cta:hover{background:var(--ink); color:var(--ground); border-color:var(--ink)}
+  .disclaim{font-size:.78rem; line-height:1.55; margin-top:20px}
+
+  .themetoggle{
+    background:none; border:1px solid var(--rule); color:var(--ink-2);
+    font-family:var(--sans); font-size:.68rem; letter-spacing:.1em;
+    text-transform:uppercase; padding:5px 10px; cursor:pointer;
+  }
+  .themetoggle:hover{border-color:var(--ink); color:var(--ink)}
+
+  @media (max-width:560px){
+    body{font-size:16px}
+    .lede{font-size:1.05rem}
+    nav{display:none}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap masthead">
+    <div class="logo">fin<span>LM</span></div>
+    <nav>
+      <a href="#findings">Findings</a>
+      <a href="#gate">The gate</a>
+      <a href="#method">Method</a>
+      <a href="#corrections">Corrections</a>
+    </nav>
+    <button class="themetoggle" id="tt" type="button">Theme</button>
+  </div>
+</header>
+
+<main>
+  <div class="wrap hero">
+    <p class="eyebrow">Point-in-time research infrastructure &middot; NSE &middot; 2010-2026</p>
+    <h1>The edge was real for sixteen years. It is dying.</h1>
+    <p class="lede">
+      finLM is a research stack for Indian equities: 16 years of point-in-time NSE data,
+      a deterministic analysis layer exposed to language models, and a risk gate that
+      refuses to place orders. <strong>The headline finding is a decay, not a return.</strong>
+    </p>
+  </div>
+
+  <div class="plate">
+    <div class="wrap">
+      <p class="plate-title">Net-of-cost benchmark-adjusted alpha per trade, by year</p>
+      <p class="plate-sub">Fade strategy, 2010-2025. Positive in all 16 years, and falling.</p>
+      <figure>
+        <canvas id="decay" width="1100" height="420" role="img"
+          aria-label="Column chart of yearly alpha from 2010 to 2025, declining from about 2.3 percent to 0.79 percent, with a downward regression line."></canvas>
+        <figcaption>
+          Spearman r = &minus;0.653 (p = 0.0013). Slope &asymp; &minus;0.12 percentage points
+          per year, stable under every specification tested, with all leave-one-out slopes
+          negative. Excluding 2020 the relationship strengthens (r = &minus;0.707, p = 0.0003).
+        </figcaption>
+      </figure>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <section id="disclosure">
+      <h2>What has and has not been run</h2>
+      <p>
+        This is research infrastructure and a governance layer, not a live trading system.
+        Being exact about that, because the distinction is the whole point:
+      </p>
+      <ul class="ledger">
+        <li><span class="mark yes">REAL</span><span>Backtests over 2010-2026 NSE data, point-in-time and survivorship-verified</span></li>
+        <li><span class="mark yes">REAL</span><span>13 decisions journaled with their reasoning, scored against actual NSE closes</span></li>
+        <li><span class="mark yes">BUILT</span><span>Broker integration implemented and unit-tested against a mock</span></li>
+        <li><span class="mark no">ZERO</span><span>Orders ever placed. Not one.</span></li>
+        <li><span class="mark no">NEVER</span><span>Broker account authenticated. No session token has ever existed.</span></li>
+        <li><span class="mark no">NONE</span><span>Capital at risk, at any point</span></li>
+      </ul>
+      <p>
+        No order was placed because the mandate file authorising one was deliberately never
+        written, so the gate refused every time. That is the design working rather than a
+        missing feature. Where a return figure appears, it is a paper decision scored
+        against real closing prices: real data, real forward scoring, no money.
+      </p>
+    </section>
+
+    <section id="findings">
+      <h2><span class="num">01</span>Chasing loses. Fading worked, and is fading.</h2>
+      <p>
+        The scanner finds stocks that spiked on unusual volume. You can chase the move or
+        fade it. Across 16 complete years, chasing lost in every configuration tested
+        (<span class="stat">-1.55%</span> per trade net, n = 1,033). Fading produced positive
+        benchmark-adjusted alpha in <em>every single year</em>.
+      </p>
+      <p>
+        But the effect decays monotonically, from roughly 2.3% early in the sample to
+        <span class="stat">0.79%</span> in 2025. A structural-break test put the best split
+        before 2023, when T+1 settlement completed, an event named in the pre-registration
+        before the data was examined. At p = 0.0375 it fails the robustness check, so it is
+        reported as suggestive and not promoted.
+      </p>
+      <blockquote>
+        The sign test is now 16 of 16 positive, p = 1/65,536: thirty-two times more
+        "significant" than the original result, while the effect size fell about 78%.
+        A sign test measures whether the sign is real and says nothing about magnitude.
+        The honest headline is the decay, not the p-value.
+      </blockquote>
+
+      <h2><span class="num">02</span>Most published anomalies do not show up here</h2>
+      <p>
+        Eleven documented equity anomalies, tested on NSE 2010-2024 with standard
+        cross-sectional quintile sorts: 290,651 symbol-months, 161 usable months. In the
+        liquid tradeable universe, essentially nothing survives. Widen the universe and
+        two effects appear and hold.
+      </p>
+      <div class="scroll">
+        <table>
+          <thead>
+            <tr><th>Anomaly</th><th class="num">Wide (~445)</th><th class="num">Mid (~234)</th><th class="num">Liquid (~134)</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="live">momentum (12-1)</td><td class="num pos">t=3.37 / +15.3%</td><td class="num">2.19 / +9.8%</td><td class="num">1.72 / +6.5%</td></tr>
+            <tr><td class="live">52-week high</td><td class="num pos">t=3.05 / +15.3%</td><td class="num">1.87 / +8.1%</td><td class="num">1.29 / +5.1%</td></tr>
+            <tr><td>skewness</td><td class="num neg">-2.43 / -8.6%</td><td class="num neg">-3.15 / -11.6%</td><td class="num">-1.43 / -8.7%</td></tr>
+            <tr><td>low volatility</td><td class="num">1.80 / +6.1%</td><td class="num">0.50 / -0.4%</td><td class="num">0.33 / -1.0%</td></tr>
+            <tr><td>short-term reversal</td><td class="num">-0.92 / -7.9%</td><td class="num">-0.13 / -4.5%</td><td class="num">-0.22 / -5.1%</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        Benjamini-Hochberg at q = 0.10 leaves three survivors. A bootstrap of the maximum
+        |t| under the null (returns permuted within month, 1,000 iterations) gives observed
+        3.374 against a null 95th percentile of 2.828, <span class="stat">p = 0.012</span>.
+        The strict test passes.
+      </p>
+      <p>
+        Two things need reading carefully. Skewness is statistically significant but not
+        tradeable: its significance is significance of <em>losing money</em>, and flipped to
+        the profitable direction it is worth about +0.8% a year, which is nil. And
+        short-term reversal is exactly null at monthly horizon, which does not contradict
+        finding 01 so much as locate it: reversal in India lives at the daily horizon.
+      </p>
+      <p>
+        A conditional double sort, ranking each characteristic within liquidity terciles,
+        confirms these are not liquidity in disguise. Magnitudes shrink by about a third;
+        significance survives.
+      </p>
+    </section>
+  </div>
+
+  <div class="plate">
+    <div class="wrap">
+      <p class="plate-title">Where the effects live</p>
+      <p class="plate-sub">
+        Gross t-statistic by universe width. Both survivors decay as the universe narrows
+        toward the names you could actually trade at size.
+      </p>
+      <figure>
+        <canvas id="tiers" width="1100" height="360" role="img"
+          aria-label="Slope chart showing momentum and 52-week-high t-statistics falling from the wide universe to the liquid universe, while other anomalies stay near zero."></canvas>
+        <figcaption>
+          The dashed line is |t| = 2. An effect that only clears it in the widest universe
+          is real but sits where capacity is thinnest, which is a limits-to-arbitrage story
+          rather than a tradeable one.
+        </figcaption>
+      </figure>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <section>
+      <h3>The cost hurdle, drawn</h3>
+      <p>
+        A strategy with <em>no edge at all</em>, rebalancing monthly at 80% turnover, loses
+        6.6% a year to costs. Every finding on this page has to clear that line before it
+        means anything.
+      </p>
+      <figure>
+        <canvas id="hurdle" width="1100" height="200" role="img"
+          aria-label="Bar chart comparing the annual cost drag of 6.6 percent against gross returns of the surviving anomalies."></canvas>
+        <figcaption>
+          Gross annual return of each surviving effect against the cost drag it has to pay.
+          Skewness is the instructive one: statistically significant, economically nil once
+          traded in the profitable direction.
+        </figcaption>
+      </figure>
+    </section>
+
+    <section id="gate">
+      <h2><span class="num">03</span>The gate, and the four ways it broke</h2>
+      <p>
+        An LLM handed an order tool and told to "always ask first" is not governed. The
+        reference LLM trading server in India gates real orders behind a
+        <code>confirmed=true</code> parameter that the model sets itself. That is theatre.
+      </p>
+      <p>
+        finLM puts authorisation in a file the human writes, which no code path in the
+        package can create, plus a filesystem kill switch and no bypass parameter. Then it
+        was attacked on the assumption the model is adversarial. It lost four times:
+      </p>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>Bypass</th><th>How it worked</th></tr></thead>
+          <tbody>
+            <tr><td class="live">Price spoofing</td><td>A market order valued from a caller-supplied price of 1.00 cleared a 50,000 cap while executing at 500,000</td></tr>
+            <tr><td class="live">Negative quantity</td><td>-100 passes the quantity cap and makes value negative, clearing both caps at once</td></tr>
+            <tr><td class="live">Unicode evasion</td><td>A zero-width space or full-width characters slid past the symbol blocklist</td></tr>
+            <tr><td class="live">NaN price</td><td>Every comparison with NaN is false, so the value cap silently passed</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        All four are one bug wearing four hats: the gate trusted caller-supplied values as
+        ground truth. That is the classic confused deputy problem, a program holding
+        authority the caller lacks, tricked into using it because it believed the caller's
+        description of the request.
+      </p>
+      <p>
+        The claim is not that the gate is unbypassable. It is that it was attacked, it
+        broke, it was fixed, and there is a suite that keeps it shut.
+      </p>
+    </section>
+
+    <section id="method">
+      <h2><span class="num">04</span>Why the numbers are trustworthy</h2>
+      <p>
+        The methodology is the actual product. Entries are at the next day's open, because
+        end-of-day data means you cannot act on today's close, and the scanner filters the
+        panel to prior rows structurally rather than by discipline.
+      </p>
+      <p>
+        Survivorship is excluded and verified rather than asserted. The universe is built
+        from per-day exchange archives, so each row is what actually traded that day. Of
+        2,543 symbols across 2010-2020, <span class="stat">771 stop appearing</span> before
+        mid-2020, and the dead end at their real demise: Satyam in July 2013, Educomp in
+        2017, Gitanjali in July 2018, Jet Airways in September 2019, Unitech in March 2020.
+        A symbol list backfilled from today cannot produce that pattern.
+      </p>
+      <p>
+        Every result is benchmark-adjusted against an equal-weight liquid-universe index,
+        costs are modelled rather than mentally discounted, and corporate actions are
+        back-adjusted with the full audit trail queryable. A zero-alpha strategy at 80%
+        monthly turnover loses 6.6% a year to costs alone, and that is the bar every finding
+        above has to clear.
+      </p>
+      <h3>Hypotheses are pre-registered</h3>
+      <p>
+        Before the data was computed, a file recorded a prediction interval and an explicit
+        falsification region for a hypothesis about why alpha varies. The observation landed
+        outside the interval, in the direction opposite the prediction. The hypothesis was
+        recorded as dead. The same discipline, including a stopping rule fixed in advance,
+        governs the multiple-testing correction and the decay analysis.
+      </p>
+      <h3>Runs are stamped</h3>
+      <p>
+        Every result-producing run writes an artifact recording the commit and whether the
+        tree was dirty, a database fingerprint, library versions and the full config. There
+        is no opt-out flag, and a test asserts there never will be. Documentation cites the
+        artifact rather than retyping the number.
+      </p>
+    </section>
+
+    <section id="corrections">
+      <h2><span class="num">05</span>What was wrong, and how it was found</h2>
+      <p>
+        The correction trail is the part worth reading. Three entries, escalating in rigour.
+      </p>
+
+      <div class="correction">
+        <span class="was">Moves backed by a genuine news catalyst behave differently, so take no action on those</span>
+        <span class="now">Caught after the fact. The scorer contradicted the recorded hypothesis three days later, on n = 5.</span>
+      </div>
+
+      <div class="correction">
+        <span class="was">935 trades, 52.6% win rate, +1.2% alpha per trade, profit factor 1.18</span>
+        <span class="now">Caught by audit. Would not reproduce. 18 configurations tested; the entry logic and exit defaults were byte-identical to the commit that produced it, so the run itself was never captured. A provenance layer now makes that impossible.</span>
+      </div>
+
+      <div class="correction">
+        <span class="was">Market breadth explains why fade alpha varies (r = -0.64)</span>
+        <span class="now">Caught in advance. Pre-registered with its falsification region written down first, then falsified: the model predicted +2.80% with a 95% interval of [+1.57, +4.04], and the observation was +0.58%. Directionally wrong, not just outside.</span>
+      </div>
+
+      <p>
+        Superseded figures are kept struck through with a dated correction rather than
+        quietly replaced. Deleting them would have been easier and much worse.
+      </p>
+    </section>
+
+    <section id="limits">
+      <h2><span class="num">06</span>Limits worth knowing before you trust any of it</h2>
+      <ul class="ledger">
+        <li><span class="mark no">SHORT</span><span>About 97% of the measured edge is short-side. An Indian retail cash account cannot hold a multi-day short, so this is a de-risking filter and not a return strategy.</span></li>
+        <li><span class="mark no">DECAY</span><span>The edge reached 0.79% in 2025. Extrapolate the slope and it hits zero within a few years.</span></li>
+        <li><span class="mark no">SIZE</span><span>No market capitalisation data exists in the source, so there is no value-weighting and no true size factor.</span></li>
+        <li><span class="mark no">EOD</span><span>End-of-day data only. No spreads, no order book, no execution modelling.</span></li>
+        <li><span class="mark no">OPEN</span><span>Factor attribution has not been run. Until it is, momentum and 52-week-high are candidate findings and not established alpha.</span></li>
+      </ul>
+    </section>
+
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <a class="cta" href="https://github.com/hasil7677/finLLM">Read the code</a>
+    <a class="cta" href="https://github.com/hasil7677/finLLM/blob/main/PROJECT_DEEP_DIVE.md">The deep dive</a>
+    <p class="disclaim">
+      <strong>Not investment advice.</strong> This is research and engineering work published
+      for inspection. Nothing here recommends buying or selling any security. The strategies
+      described are demonstrably decaying, largely untradeable in a retail cash account, and
+      have never been executed with real money. Backtested results do not indicate future
+      returns.
+    </p>
+    <p class="disclaim">Built by Hasil. Data from public NSE end-of-day archives.</p>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var YEARS = [2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025];
+  var VALS  = [2.27,3.52,2.49,1.90,2.15,2.07,1.87,1.27,3.01,2.54,2.39,1.13,1.41,0.35,1.23,0.79];
+
+  var cv = document.getElementById('decay');
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function css(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+
+  function fit(){
+    var n = YEARS.length, sx=0, sy=0, sxy=0, sxx=0;
+    for(var i=0;i<n;i++){ sx+=i; sy+=VALS[i]; sxy+=i*VALS[i]; sxx+=i*i; }
+    var m = (n*sxy - sx*sy)/(n*sxx - sx*sx);
+    return { m:m, b:(sy - m*sx)/n };
+  }
+
+  function draw(t){
+    if(!cv) return;
+    var dpr = Math.min(window.devicePixelRatio||1, 2);
+    var w = cv.clientWidth, h = Math.max(300, Math.round(w*0.38));
+    cv.width = w*dpr; cv.height = h*dpr;
+    cv.style.height = h+'px';
+    var g = cv.getContext('2d');
+    g.setTransform(dpr,0,0,dpr,0,0);
+    g.clearRect(0,0,w,h);
+
+    var ink=css('--ink'), ink2=css('--ink-2'), rule=css('--rule'),
+        acc=css('--accent'), ver=css('--verify');
+
+    var padL=34, padR=8, padT=16, padB=34;
+    var W=w-padL-padR, H=h-padT-padB;
+    var maxV=3.8;
+    var yOf=function(v){ return padT + H - (v/maxV)*H; };
+
+    // horizontal ledger rules
+    g.strokeStyle=rule; g.lineWidth=1;
+    g.font='11px '+ (getComputedStyle(document.body).getPropertyValue('--sans')||'sans-serif');
+    g.fillStyle=ink2;
+    for(var v=0; v<=3; v++){
+      var y=Math.round(yOf(v))+0.5;
+      g.beginPath(); g.moveTo(padL,y); g.lineTo(padL+W,y); g.stroke();
+      g.textAlign='right'; g.textBaseline='middle';
+      g.fillText(v+'%', padL-8, y);
+    }
+
+    var n=VALS.length;
+    var slot=W/n, bw=Math.max(6, Math.min(30, slot*0.46));
+
+    // columns, drawn in sequence
+    for(var i=0;i<n;i++){
+      var p = reduce ? 1 : Math.max(0, Math.min(1, (t - i*0.045)/0.42));
+      if(p<=0) continue;
+      var cx = padL + slot*(i+0.5);
+      var full = padT+H - yOf(VALS[i]);
+      var bh = full*p;
+      g.fillStyle = (i>=11) ? acc : ver;
+      g.globalAlpha = (i>=11) ? 0.92 : 0.62;
+      g.fillRect(Math.round(cx-bw/2), Math.round(padT+H-bh), Math.round(bw), Math.round(bh));
+      g.globalAlpha = 1;
+    }
+
+    // baseline
+    g.strokeStyle=ink; g.lineWidth=1;
+    g.beginPath(); g.moveTo(padL, padT+H+0.5); g.lineTo(padL+W, padT+H+0.5); g.stroke();
+
+    // regression line
+    var f=fit(), lp = reduce ? 1 : Math.max(0, Math.min(1,(t-0.5)/0.5));
+    if(lp>0){
+      g.save();
+      g.strokeStyle=acc; g.lineWidth=2; g.setLineDash([6,4]);
+      g.beginPath();
+      var x0=padL+slot*0.5, y0=yOf(f.b);
+      var x1=padL+slot*(n-0.5), y1=yOf(f.b+f.m*(n-1));
+      g.moveTo(x0,y0); g.lineTo(x0+(x1-x0)*lp, y0+(y1-y0)*lp);
+      g.stroke(); g.restore();
+    }
+
+    // year labels: ends and the turn
+    g.fillStyle=ink2; g.textAlign='center'; g.textBaseline='top';
+    [0,5,10,15].forEach(function(i){
+      g.fillText(YEARS[i], padL+slot*(i+0.5), padT+H+9);
+    });
+
+    // endpoint value
+    if(lp>=1 || reduce){
+      g.fillStyle=acc; g.textAlign='right'; g.textBaseline='bottom';
+      g.font='700 13px '+(getComputedStyle(document.body).getPropertyValue('--mono')||'monospace');
+      g.fillText('0.79%', padL+W, yOf(VALS[n-1])-8);
+    }
+  }
+
+  var start=null, raf=null;
+  function animate(ts){
+    if(start===null) start=ts;
+    var t=(ts-start)/1000;
+    draw(Math.min(t,1));
+    if(t<1.05) raf=requestAnimationFrame(animate);
+  }
+  function run(){
+    if(raf) cancelAnimationFrame(raf);
+    start=null;
+    if(reduce){ draw(1); } else { raf=requestAnimationFrame(animate); }
+  }
+
+  window.addEventListener('resize', function(){ draw(1); });
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(){ draw(1); });
+  new MutationObserver(function(){ draw(1); })
+    .observe(document.documentElement, {attributes:true, attributeFilter:['data-theme']});
+
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(e){
+      if(e[0].isIntersecting){ run(); io.disconnect(); }
+    },{threshold:.25});
+    io.observe(cv);
+  } else { run(); }
+
+  // ---- tier slope chart ----
+  var TIERS = [
+    {name:'momentum',    v:[3.37,2.19,1.72], key:true},
+    {name:'52-week high',v:[3.05,1.87,1.29], key:true},
+    {name:'low vol',     v:[1.80,0.50,0.33]},
+    {name:'low turnover',v:[1.20,1.18,2.33]},
+    {name:'illiquidity', v:[0.37,0.84,1.21]}
+  ];
+  function drawTiers(){
+    var c=document.getElementById('tiers'); if(!c) return;
+    var dpr=Math.min(window.devicePixelRatio||1,2);
+    var w=c.clientWidth, h=Math.max(260, Math.round(w*0.30));
+    c.width=w*dpr; c.height=h*dpr; c.style.height=h+'px';
+    var g=c.getContext('2d'); g.setTransform(dpr,0,0,dpr,0,0); g.clearRect(0,0,w,h);
+    var ink=css('--ink'), ink2=css('--ink-2'), rule=css('--rule'), acc=css('--accent'), ver=css('--verify');
+    var padL=38,padR=110,padT=18,padB=34, W=w-padL-padR, H=h-padT-padB, maxT=3.8;
+    var yOf=function(v){return padT+H-(v/maxT)*H;};
+    var xs=[padL, padL+W/2, padL+W];
+    g.font='11px sans-serif';
+    // axis + gridlines
+    g.strokeStyle=rule; g.lineWidth=1; g.fillStyle=ink2;
+    for(var v=0;v<=3;v++){
+      var y=Math.round(yOf(v))+0.5;
+      g.beginPath(); g.moveTo(padL,y); g.lineTo(padL+W,y); g.stroke();
+      g.textAlign='right'; g.textBaseline='middle'; g.fillText(v.toFixed(0), padL-8, y);
+    }
+    // significance threshold
+    g.save(); g.strokeStyle=acc; g.setLineDash([5,4]); g.lineWidth=1.5;
+    var ty=Math.round(yOf(2))+0.5;
+    g.beginPath(); g.moveTo(padL,ty); g.lineTo(padL+W,ty); g.stroke(); g.restore();
+    g.fillStyle=acc; g.textAlign='left'; g.textBaseline='bottom';
+    g.fillText('|t| = 2', padL+4, ty-4);
+    // series
+    TIERS.forEach(function(s){
+      g.beginPath();
+      s.v.forEach(function(val,i){ i?g.lineTo(xs[i],yOf(val)):g.moveTo(xs[i],yOf(val)); });
+      g.strokeStyle = s.key?ver:rule; g.lineWidth = s.key?2.5:1.5;
+      g.globalAlpha = s.key?1:0.75; g.stroke(); g.globalAlpha=1;
+      s.v.forEach(function(val,i){
+        g.beginPath(); g.arc(xs[i],yOf(val), s.key?4:2.5, 0, Math.PI*2);
+        g.fillStyle=s.key?ver:rule; g.fill();
+      });
+      g.fillStyle=s.key?ink:ink2; g.textAlign='left'; g.textBaseline='middle';
+      g.font=(s.key?'700 ':'')+'11px sans-serif';
+      g.fillText(s.name, padL+W+10, yOf(s.v[2]));
+    });
+    g.fillStyle=ink2; g.textAlign='center'; g.textBaseline='top'; g.font='11px sans-serif';
+    ['wide (445)','mid (234)','liquid (134)'].forEach(function(l,i){
+      g.fillText(l, xs[i], padT+H+9);
+    });
+  }
+
+  // ---- cost hurdle chart ----
+  var HURDLE=[
+    {name:'momentum (gross)', v:19.2, good:true},
+    {name:'52-week high (gross)', v:19.2, good:true},
+    {name:'skewness, traded profitably', v:4.7, good:false},
+    {name:'cost drag at 80% turnover', v:6.6, cost:true}
+  ];
+  function drawHurdle(){
+    var c=document.getElementById('hurdle'); if(!c) return;
+    var dpr=Math.min(window.devicePixelRatio||1,2);
+    var w=c.clientWidth, h=Math.max(170, Math.round(w*0.17));
+    c.width=w*dpr; c.height=h*dpr; c.style.height=h+'px';
+    var g=c.getContext('2d'); g.setTransform(dpr,0,0,dpr,0,0); g.clearRect(0,0,w,h);
+    var ink=css('--ink'), ink2=css('--ink-2'), acc=css('--accent'), ver=css('--verify');
+    var padL=Math.min(210, w*0.42), padR=46, W=w-padL-padR;
+    var rowH=h/HURDLE.length, maxV=21;
+    g.font='11px sans-serif';
+    HURDLE.forEach(function(d,i){
+      var y=i*rowH+rowH/2;
+      g.fillStyle=d.cost?acc:ink2; g.textAlign='right'; g.textBaseline='middle';
+      g.font=(d.cost?'700 ':'')+'11px sans-serif';
+      g.fillText(d.name, padL-12, y);
+      var bw=(d.v/maxV)*W, bh=Math.min(15, rowH*0.5);
+      g.fillStyle=d.cost?acc:(d.good?ver:ink2);
+      g.globalAlpha=d.cost?0.9:(d.good?0.75:0.45);
+      g.fillRect(padL, y-bh/2, bw, bh); g.globalAlpha=1;
+      g.fillStyle=ink; g.textAlign='left';
+      g.font='700 11px monospace';
+      g.fillText(d.v.toFixed(1)+'%', padL+bw+8, y);
+    });
+    g.save(); g.strokeStyle=acc; g.setLineDash([4,4]); g.lineWidth=1.5;
+    var hx=Math.round(padL+(6.6/maxV)*W)+0.5;
+    g.beginPath(); g.moveTo(hx,4); g.lineTo(hx,h-4); g.stroke(); g.restore();
+  }
+
+  function drawExtras(){ drawTiers(); drawHurdle(); }
+  window.addEventListener('resize', drawExtras);
+  new MutationObserver(drawExtras).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', drawExtras);
+  if('IntersectionObserver' in window){
+    ['tiers','hurdle'].forEach(function(id){
+      var el=document.getElementById(id); if(!el) return;
+      var o=new IntersectionObserver(function(e){ if(e[0].isIntersecting){ drawExtras(); o.disconnect(); } },{threshold:.2});
+      o.observe(el);
+    });
+  } else { drawExtras(); }
+
+  // theme toggle
+  var tt=document.getElementById('tt');
+  tt.addEventListener('click', function(){
+    var cur=document.documentElement.getAttribute('data-theme');
+    if(!cur){
+      cur = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark':'light';
+    }
+    document.documentElement.setAttribute('data-theme', cur==='dark'?'light':'dark');
+  });
+})();
+</script>
+</body>
+</html>

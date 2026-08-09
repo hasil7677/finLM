@@ -1,11 +1,24 @@
 # finLM
 
-**Point-in-time equity research infrastructure for Indian markets** - 16 years of NSE
-data, a deterministic analysis layer exposed to LLMs over the Model Context Protocol,
-and a risk gate that makes execution auditable.
+It is easy to build an AI that suggests stock trades. Thousands of people have.
+
+The hard part, the part almost nobody does, is making the system trustworthy enough that
+you would actually connect it to a brokerage account. That takes two things, and both are
+tedious: proving the strategy on data that was not quietly cherry-picked, and building
+controls the model cannot talk its way around.
+
+finLM is both halves.
+
+**The research half** is 16 years of Indian stock market data, tested carefully enough
+that the headline finding turned out to be a strategy that is *dying* rather than one
+that works. That is written up as the main result, because it is what the data says.
+
+**The governance half** is a risk gate that decides whether an order is allowed. It was
+attacked on the assumption that the AI is adversarial, it broke four different ways, and
+all four are fixed with a test suite that keeps them shut.
 
 ```
-llmfin-replicate --db ~/.llmfin/market_full.db      # anomaly replication study
+llmfin-replicate --db ~/.llmfin/market_full.db      # test 11 published anomalies
 llmfin-backtest  --entry pullback --cost-pct 0.4    # point-in-time backtest
 llmfin-server                                       # MCP server, 15 tools
 ```
@@ -333,6 +346,44 @@ answer once invented a "positive earnings report" that didn't exist.
   carry-over, no price/volume discontinuity) before use.
 
 ---
+
+## What I would build next
+
+In priority order, with the reasoning rather than just the list.
+
+**1. Factor attribution.** The two surviving anomalies have not been regressed on size,
+value and volatility factors. A "spiked on volume" screen loads on volatility and
+illiquidity by construction, so some of that 15% could be compensation for known risk
+rather than a new effect. This is the single control standing between "candidate finding"
+and "result", and it is the first thing anyone competent will ask about. Indian factor
+data is published and usable.
+
+**2. Capacity.** Nobody asks how much money a strategy holds, and it is the question that
+separates thinking about trading from thinking about backtesting. Model market impact
+against each stock's average daily volume and find the point where the edge goes to zero.
+Being able to say "this decays to nothing above X crore" is worth more than another
+decimal place on the alpha.
+
+**3. Point-in-time F&O eligibility.** The edge is short-side, which needs futures, which
+restricts the universe to roughly 180 names. Rerunning restricted to that set answers
+whether the *tradeable* subset keeps the edge. The trap: the eligible list changed over
+the years, so using today's list on 2010 data reintroduces exactly the lookahead this
+project spent so long removing. Historical eligibility lists are the hard part.
+
+**4. Close the last data seam.** The series is continuous 2010 to 2026 in the merged
+database, but it is assembled from two ingest formats meeting in July 2024. That boundary
+was validated and is clean, and it should be re-validated whenever the range extends.
+
+**5. Cross-repo bypass survey.** The four gate bypasses are a taxonomy, and the taxonomy is
+only interesting if it generalises. Checking the same six classes against other
+open-source LLM systems with live execution paths would turn one anecdote into a
+prevalence claim. It needs responsible disclosure to maintainers first, since those are
+systems people run with real money.
+
+Deliberately **not** on the list: more resampling of the anomaly results. The
+pre-registered stopping rule says three survivors sends you to factor attribution, not to
+a block bootstrap. Every robustness check suggests another one, and a project can polish
+itself to death.
 
 ## Repository layout
 

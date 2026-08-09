@@ -5,7 +5,6 @@
     "sha": "c5a838c6efa45a2cba02f5d833a41ed973141803",
     "dirty": true,
     "dirty_files": [
-      " M SUBMISSION.md",
       " M risk_limits.example.json",
       " M src/llmfin/backtest.py",
       " M src/llmfin/risk.py",

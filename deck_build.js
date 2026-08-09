@@ -58,7 +58,7 @@ function kicker(s, text, dark) {
     x: 10.9, y: 3.9, w: 3.4, h: 3.4, fill: { color: "16274A" },
   });
 
-  s.addText("CODESTREET 2026  ·  AMERICAN EXPRESS", {
+  s.addText("POINT-IN-TIME RESEARCH  ·  NSE  ·  2010-2026", {
     x: M, y: 1.15, w: 8.5, h: 0.3, fontFace: B, fontSize: 12,
     bold: true, charSpacing: 2, color: MINT, margin: 0,
   });
@@ -79,11 +79,11 @@ function kicker(s, text, dark) {
     x: M, y: 5.55, w: 5.3, h: 0.62, rectRadius: 0.31,
     fill: { color: NAVY_CARD },
   });
-  s.addText("Theme: Governance Layer for Financial Agents", {
+  s.addText("16 years of data  ·  120 tests  ·  0 orders placed", {
     x: M, y: 5.55, w: 5.3, h: 0.62, fontFace: B, fontSize: 13,
     bold: true, color: LIGHT, align: "center", valign: "middle", margin: 0,
   });
-  s.addText("Hasil  ·  Idea Submission", {
+  s.addText("Hasil  ·  github.com/hasil7677/finLLM", {
     x: M, y: 6.45, w: 6, h: 0.3, fontFace: B, fontSize: 12,
     color: "7E93B8", margin: 0,
   });
@@ -647,11 +647,11 @@ function kicker(s, text, dark) {
     });
   });
 
-  s.addText("finLM  ·  Hasil  ·  CodeStreet 2026", {
+  s.addText("finLM  ·  Hasil  ·  github.com/hasil7677/finLLM", {
     x: M, y: 6.3, w: 8, h: 0.4, fontFace: H, fontSize: 15, bold: true,
     color: LIGHT, margin: 0,
   });
   s.addNotes("The bottleneck for financial agents is not capability, it is trust. finLM makes authority enforceable, reasoning auditable, and judgment measurable. Thank you.");
 }
 
-pres.writeFile({ fileName: "finLM_CodeStreet2026.pptx" }).then(() => console.log("deck written"));
+pres.writeFile({ fileName: "finLM_overview.pptx" }).then(() => console.log("deck written"));

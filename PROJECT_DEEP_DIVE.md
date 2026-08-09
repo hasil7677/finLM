@@ -288,8 +288,8 @@ c23979c  Add files via upload
 45654d7  Rebuild as a working intelligence layer: scanner, signals, journal, risk gate
 ```
 
-The project began as an entry for **CodeStreet 2026**, a hackathon run by
-American Express, on the theme of AI governance.
+The project began as an exploration of one question: what would it take to let
+an LLM near a brokerage account without it being reckless?
 
 The first real commit message says "**Rebuild** as a working intelligence layer,"
 which tells you the first upload was scrapped almost immediately. What replaced
@@ -336,15 +336,15 @@ trusting the synthesised answer and present the underlying sources instead.
 First appearance of the project's recurring theme: *the system asserted something
 it hadn't verified.*
 
-### Phase 3 - Hackathon framing (25 July)
+### Phase 3 - Framing the thesis (25 July)
 
 ```
-650cd13  Add hackathon submission writeup
+650cd13  Add project writeup
 ebd259c  Name the project finLM
 d085f92  Add short-form submission field copy
 ac5ea3b  Reframe submission for 'Governance Layer for Financial Agents' theme
 96571c1  Add pitch deck generator
-22ec110  Add CodeStreet 2026 pitch deck
+22ec110  Add pitch deck
 738648c  Disclose sample size on the hypothesis-reversal slide
 ```
 

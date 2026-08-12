@@ -15,7 +15,7 @@ Two things are checked here:
 
 Both had drifted when this test was written: the server registered 15 tools,
 its docstring header said 15 but enumerated only 14 (get_risk_status was
-missing), and README.md / README.md / SUBMISSION.md all still said 13.
+missing), and the README still said 13.
 """
 
 from __future__ import annotations
@@ -29,7 +29,7 @@ import pytest
 server = pytest.importorskip("llmfin.server")
 
 REPO_ROOT = Path(server.__file__).resolve().parents[2]  # .../finLLM/src/llmfin/server.py
-DOCS_CLAIMING_A_COUNT = ["README.md", "README.md", "SUBMISSION.md"]
+DOCS_CLAIMING_A_COUNT = ["README.md", "PROJECT_DEEP_DIVE.md"]
 
 
 @pytest.fixture(scope="module")

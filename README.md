@@ -4,8 +4,8 @@
 
 **A governance layer for AI agents.**
 It decides what the agent is allowed to do and what it is allowed to claim, and the agent
-can't argue with either. Wired to a real stockbroker, because money is the hardest thing to
-hand an AI.
+can't argue with either. Wired to a real broker order path, because money is the hardest
+thing to hand an AI.
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue)
@@ -71,7 +71,7 @@ days whether you were wrong. Most of the code here is the part that says no.
 | **Decides what it can do** | No order without a file a human wrote. Fails closed, kill switch, no override. [Detail ↓](#the-governance-layer) |
 | **Decides what it can claim** | No result until it survives real costs, point-in-time data and multiple-testing correction. [Detail ↓](#why-these-numbers-are-trustworthy) |
 | **I attacked it myself** | 58 tests trying to sneak a bad order past the gate. **4 got through.** All four fixed. |
-| **The thing being governed** | A live Zerodha order path, plus 16 years of NSE data to test claims against. |
+| **The thing being governed** | A real Zerodha order path (never authenticated), plus 16 years of NSE data to test claims against. |
 | **Talks to** | Claude Code or any MCP client, over stdio or streamable HTTP. 15 tools. |
 | **Live orders placed** | **Zero.** The gate refused every time, by design. [Disclosure ↓](#read-this-first---what-has-and-has-not-been-run) |
 

@@ -2,9 +2,9 @@
 
 # finLM
 
-**An AI that researches the Indian stock market, and a risk gate it cannot argue with.**
-Eleven published anomalies tested under one methodology. Two survived. Zero orders ever
-placed, because the file that would authorise one was deliberately never written.
+**A governance layer for LLM agents that can move real money.**
+The model can research, reason and recommend. It cannot place an order, and it cannot make
+the evidence look better than it is. Both controls were attacked until they broke.
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue)
@@ -25,43 +25,53 @@ placed, because the file that would authorise one was deliberately never written
 
 ### [Read the case study &rarr;](https://finlm-jade.vercel.app/)
 
-Five things this project got wrong, how each one was caught, and what survived.
+Five things this project asserted and had to withdraw, the mechanism that caught each one, and what survived.
 
 ---
 
-**[Skip to: What the data says](#what-the-data-says) &middot;
-[Why trust it](#why-these-numbers-are-trustworthy) &middot;
-[The risk gate](#the-governance-layer) &middot;
+**[Skip to: The risk gate](#the-governance-layer) &middot;
+[How claims are governed](#why-these-numbers-are-trustworthy) &middot;
+[What the data says](#what-the-data-says) &middot;
 [Setup](#setup) &middot;
 [Status](#status) &middot;
 [Roadmap](#roadmap)**
 
 ---
 
-It is easy to build an AI that suggests stock trades. Thousands of people have.
+It is easy to build an AI that suggests stock trades. Thousands of people have. The hard
+part, the part almost nobody does, is what happens when you attach that model to something
+irreversible.
 
-The hard part, the part almost nobody does, is making the system trustworthy enough that
-you would actually connect it to a brokerage account. That takes two things, and both are
-tedious: proving the strategy on data that was not quietly cherry-picked, and building
-controls the model cannot talk its way around.
+An agent pointed at money has to be governed twice, and both controls have to sit outside
+the model's reach:
 
-finLM is both halves.
+**Governing what it can do.** An LLM handed a `place_order` tool and told to "always ask
+first" is not governed, it is trusted. Authorisation here lives in a file the human writes
+that no code path in the package can create, plus a filesystem kill switch and no bypass
+parameter anywhere in the tool surface. Then it was attacked on the assumption the model is
+hostile. It broke four different ways, and all four are fixed with a suite that keeps them
+shut.
 
-**The research half** is 16 years of Indian stock market data, tested carefully enough
-that the headline finding turned out to be a strategy that is *dying* rather than one
-that works. That is written up as the main result, because it is what the data says.
+**Governing what it can claim.** A model that cannot place a bad order can still hand you a
+bad number, and a backtest is the easiest thing in the world to make look good. So findings
+here have to clear a fixed bar before they count: a point-in-time universe with dead
+companies retained, costs modelled in the simulator, Newey-West errors on overlapping
+returns, multiple-testing correction across the whole family, and a run artifact stamping
+the commit and data fingerprint with no opt-out. Eleven anomalies went in. Two came out.
 
-**The governance half** is a risk gate that decides whether an order is allowed. It was
-attacked on the assumption that the AI is adversarial, it broke four different ways, and
-all four are fixed with a test suite that keeps them shut.
+**Why markets.** The trading domain is a proving ground, not the point. Markets return
+unambiguous ground truth on a schedule, which is what lets governance claims be tested
+instead of asserted. Swap the action schema and the outcome scorer and the same layer
+governs anything else that is expensive to get wrong.
 
 | | |
 |---|---|
-| **Headline finding** | Fade alpha positive in **all 16 years** (2010-2025), decaying ~0.12pp/year. Spearman r = −0.653, p = 0.0013. [Details ↓](#what-the-data-says) |
-| **Anomaly replication** | 11 published effects tested, **2 survive** Benjamini-Hochberg plus a bootstrap max-\|t\| null (p = 0.012). [Table ↓](#what-the-data-says) |
-| **Setup** | `pip install -e ".[dev]"` then `llmfin-ingest`. No account, no API key, free public NSE data. |
+| **Governs actions** | No order without a human-written mandate file. Fails closed, no bypass parameter, kill switch. [Detail ↓](#the-governance-layer) |
+| **Governs claims** | No result without point-in-time data, modelled costs, FDR correction and a stamped artifact. [Detail ↓](#why-these-numbers-are-trustworthy) |
+| **Red-teamed** | 58 adversarial tests against the gate. **4 real bypasses found and fixed**, plus a fifth in review. |
+| **What survived** | 11 anomalies tested, **2 survive** Benjamini-Hochberg plus a bootstrap max-\|t\| null (p = 0.012). [Table ↓](#what-the-data-says) |
 | **Talks to** | Claude Code or any MCP client, over stdio or streamable HTTP. 15 tools. |
-| **Orders ever placed** | **Zero.** The gate refused every time, by design. [Disclosure ↓](#read-this-first---what-has-and-has-not-been-run) |
+| **Live orders placed** | **Zero.** The gate refused every time, by design. [Disclosure ↓](#read-this-first---what-has-and-has-not-been-run) |
 
 ```
 llmfin-replicate --db ~/.llmfin/market_full.db      # test 11 published anomalies

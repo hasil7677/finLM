@@ -10,3 +10,4 @@ llmfin.mcpb
 market_full.db
 .pytest_cache/
 artifacts/__pycache__/
+site/

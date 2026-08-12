@@ -16,7 +16,7 @@ placed, because the file that would authorise one was deliberately never written
 </div>
 
 <p align="center">
-  <img src="site/social-preview.png" width="780"
+  <img src="docs/social-preview.png" width="780"
        alt="Net benchmark-adjusted alpha per trade by year, 2010 to 2025: positive every year and decaying.">
 </p>
 

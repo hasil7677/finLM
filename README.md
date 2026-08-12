@@ -11,7 +11,7 @@ placed, because the file that would authorise one was deliberately never written
 [![Protocol: MCP](https://img.shields.io/badge/protocol-MCP-6b5ca5)](#exposing-the-tools-to-an-mcp-client)
 ![Tests: 119 passing](https://img.shields.io/badge/tests-119%20passing-3D6B4B)
 ![Live orders: 0 by design](https://img.shields.io/badge/live%20orders-0%20by%20design-A8372A)
-[![Case study](https://img.shields.io/badge/read-the%20case%20study-A8372A)](https://finlm-ochre.vercel.app/)
+[![Case study](https://img.shields.io/badge/read-the%20case%20study-A8372A)](https://finlm-jade.vercel.app/)
 [![GitHub stars](https://img.shields.io/github/stars/hasil7677/finLM?style=social)](https://github.com/hasil7677/finLM/stargazers)
 
 </div>
@@ -23,7 +23,7 @@ placed, because the file that would authorise one was deliberately never written
 
 ---
 
-### [Read the case study &rarr;](https://finlm-ochre.vercel.app/)
+### [Read the case study &rarr;](https://finlm-jade.vercel.app/)
 
 Five things this project got wrong, how each one was caught, and what survived.
 

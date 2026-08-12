@@ -28,7 +28,7 @@ import pytest
 
 server = pytest.importorskip("llmfin.server")
 
-REPO_ROOT = Path(server.__file__).resolve().parents[2]  # .../finLLM/src/llmfin/server.py
+REPO_ROOT = Path(server.__file__).resolve().parents[2]  # .../finLM/src/llmfin/server.py
 DOCS_CLAIMING_A_COUNT = ["README.md", "PROJECT_DEEP_DIVE.md"]
 
 

@@ -11,7 +11,7 @@ placed, because the file that would authorise one was deliberately never written
 [![Protocol: MCP](https://img.shields.io/badge/protocol-MCP-6b5ca5)](#exposing-the-tools-to-an-mcp-client)
 ![Tests: 119 passing](https://img.shields.io/badge/tests-119%20passing-3D6B4B)
 ![Orders placed: 0](https://img.shields.io/badge/orders%20placed-0-A8372A)
-[![GitHub stars](https://img.shields.io/github/stars/hasil7677/finLLM?style=social)](https://github.com/hasil7677/finLLM/stargazers)
+[![GitHub stars](https://img.shields.io/github/stars/hasil7677/finLM?style=social)](https://github.com/hasil7677/finLM/stargazers)
 
 </div>
 
@@ -272,7 +272,7 @@ found four holes, fixed them, and here is the suite that keeps them shut."**
 ## Setup
 
 ```bash
-git clone https://github.com/hasil7677/finLLM && cd finLLM
+git clone https://github.com/hasil7677/finLM && cd finLM
 python -m venv .venv
 .venv\Scripts\activate            # Windows;  source .venv/bin/activate on Unix
 pip install -e ".[dev]"

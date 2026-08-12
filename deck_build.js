@@ -83,7 +83,7 @@ function kicker(s, text, dark) {
     x: M, y: 5.55, w: 5.3, h: 0.62, fontFace: B, fontSize: 13,
     bold: true, color: LIGHT, align: "center", valign: "middle", margin: 0,
   });
-  s.addText("Hasil  ·  github.com/hasil7677/finLLM", {
+  s.addText("Hasil  ·  github.com/hasil7677/finLM", {
     x: M, y: 6.45, w: 6, h: 0.3, fontFace: B, fontSize: 12,
     color: "7E93B8", margin: 0,
   });
@@ -647,7 +647,7 @@ function kicker(s, text, dark) {
     });
   });
 
-  s.addText("finLM  ·  Hasil  ·  github.com/hasil7677/finLLM", {
+  s.addText("finLM  ·  Hasil  ·  github.com/hasil7677/finLM", {
     x: M, y: 6.3, w: 8, h: 0.4, fontFace: H, fontSize: 15, bold: true,
     color: LIGHT, margin: 0,
   });

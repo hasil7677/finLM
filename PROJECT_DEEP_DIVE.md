@@ -933,7 +933,7 @@ be *tested* rather than asserted.
 ## 6. How to run everything
 
 ```bash
-cd finLLM
+cd finLM
 .venv/Scripts/python -m pytest -q          # 114 tests
 ```
 

@@ -2,9 +2,9 @@
 
 # finLM
 
-**A governance layer for LLM agents that can move real money.**
-The model can research, reason and recommend. It cannot place an order, and it cannot make
-the evidence look better than it is. Both controls were attacked until they broke.
+**An AI that researches the stock market and cannot spend your money.**
+It also cannot make its own results look better than they are. Both limits were attacked
+on purpose until they broke.
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue)
@@ -38,38 +38,36 @@ Five things this project asserted and had to withdraw, the mechanism that caught
 
 ---
 
-It is easy to build an AI that suggests stock trades. Thousands of people have. The hard
-part, the part almost nobody does, is what happens when you attach that model to something
-irreversible.
+It is easy to build an AI that suggests stock trades. Thousands of people have.
 
-An agent pointed at money has to be governed twice, and both controls have to sit outside
-the model's reach:
+The hard part starts the moment you actually plug one into a brokerage account. Two things
+go wrong, and neither of them is the model being stupid.
 
-**Governing what it can do.** An LLM handed a `place_order` tool and told to "always ask
-first" is not governed, it is trusted. Authorisation here lives in a file the human writes
-that no code path in the package can create, plus a filesystem kill switch and no bypass
-parameter anywhere in the tool surface. Then it was attacked on the assumption the model is
-hostile. It broke four different ways, and all four are fixed with a suite that keeps them
-shut.
+**It does something it shouldn't.** Most projects "solve" this by telling the model to ask
+permission first. That is not a control, it is a request. Here, the file that authorises an
+order is one a human writes and nothing in the code can create, there is a kill switch that
+is just a file on disk, and there is no override the model can set on itself. Then I spent a
+while trying to break my own gate, on the assumption the AI is actively trying to get around
+it. It broke four times. All four are fixed and there is a test suite that keeps them shut.
 
-**Governing what it can claim.** A model that cannot place a bad order can still hand you a
-bad number, and a backtest is the easiest thing in the world to make look good. So findings
-here have to clear a fixed bar before they count: a point-in-time universe with dead
-companies retained, costs modelled in the simulator, Newey-West errors on overlapping
-returns, multiple-testing correction across the whole family, and a run artifact stamping
-the commit and data fingerprint with no opt-out. Eleven anomalies went in. Two came out.
+**It tells you something that isn't true.** An AI that can't place a bad order can still
+hand you a bad number, and a backtest is the easiest thing in the world to accidentally rig
+in your own favour. So a result doesn't count here until it clears a fixed bar: tested on
+data as it looked at the time including companies that later went bust, with trading costs
+subtracted, corrected for the fact that testing eleven ideas gives you one that looks good
+by luck, and stamped with the exact code and data that produced it. Eleven strategies went
+in. Two came out.
 
-**Why markets.** The trading domain is a proving ground, not the point. Markets return
-unambiguous ground truth on a schedule, which is what lets governance claims be tested
-instead of asserted. Swap the action schema and the outcome scorer and the same layer
-governs anything else that is expensive to get wrong.
+That second half is why there are 16 years of Indian market data in here. Markets tell you
+whether you were right, on a schedule and without arguing. Very few domains do, which makes
+this a good place to test whether controls like these actually hold.
 
 | | |
 |---|---|
-| **Governs actions** | No order without a human-written mandate file. Fails closed, no bypass parameter, kill switch. [Detail ↓](#the-governance-layer) |
-| **Governs claims** | No result without point-in-time data, modelled costs, FDR correction and a stamped artifact. [Detail ↓](#why-these-numbers-are-trustworthy) |
-| **Red-teamed** | 58 adversarial tests against the gate. **4 real bypasses found and fixed**, plus a fifth in review. |
-| **What survived** | 11 anomalies tested, **2 survive** Benjamini-Hochberg plus a bootstrap max-\|t\| null (p = 0.012). [Table ↓](#what-the-data-says) |
+| **What it can't do** | Place an order without a file a human wrote. Fails closed, kill switch, no override. [Detail ↓](#the-governance-layer) |
+| **What it can't claim** | A result, until it survives real costs, point-in-time data and multiple-testing correction. [Detail ↓](#why-these-numbers-are-trustworthy) |
+| **I attacked it myself** | 58 tests trying to sneak a bad order past the gate. **4 got through.** All four fixed. |
+| **What survived** | 11 strategies tested, **2 still standing** after correction (p = 0.012). [Table ↓](#what-the-data-says) |
 | **Talks to** | Claude Code or any MCP client, over stdio or streamable HTTP. 15 tools. |
 | **Live orders placed** | **Zero.** The gate refused every time, by design. [Disclosure ↓](#read-this-first---what-has-and-has-not-been-run) |
 

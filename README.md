@@ -11,9 +11,7 @@ hand an AI.
 ![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue)
 [![Protocol: MCP](https://img.shields.io/badge/protocol-MCP-6b5ca5)](#exposing-the-tools-to-an-mcp-client)
 ![Tests: 119 passing](https://img.shields.io/badge/tests-119%20passing-3D6B4B)
-![Live orders: 0 by design](https://img.shields.io/badge/live%20orders-0%20by%20design-A8372A)
 [![Case study](https://img.shields.io/badge/read-the%20case%20study-A8372A)](https://finlm-jade.vercel.app/)
-[![GitHub stars](https://img.shields.io/github/stars/hasil7677/finLM?style=social)](https://github.com/hasil7677/finLM/stargazers)
 
 </div>
 

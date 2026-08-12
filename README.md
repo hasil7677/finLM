@@ -10,7 +10,8 @@ placed, because the file that would authorise one was deliberately never written
 ![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue)
 [![Protocol: MCP](https://img.shields.io/badge/protocol-MCP-6b5ca5)](#exposing-the-tools-to-an-mcp-client)
 ![Tests: 119 passing](https://img.shields.io/badge/tests-119%20passing-3D6B4B)
-![Orders placed: 0](https://img.shields.io/badge/orders%20placed-0-A8372A)
+![Live orders: 0 by design](https://img.shields.io/badge/live%20orders-0%20by%20design-A8372A)
+[![Case study](https://img.shields.io/badge/read-the%20case%20study-A8372A)](https://finlm-ochre.vercel.app/)
 [![GitHub stars](https://img.shields.io/github/stars/hasil7677/finLM?style=social)](https://github.com/hasil7677/finLM/stargazers)
 
 </div>
@@ -19,6 +20,12 @@ placed, because the file that would authorise one was deliberately never written
   <img src="docs/social-preview.png" width="780"
        alt="Net benchmark-adjusted alpha per trade by year, 2010 to 2025: positive every year and decaying.">
 </p>
+
+---
+
+### [Read the case study &rarr;](https://finlm-ochre.vercel.app/)
+
+Five things this project got wrong, how each one was caught, and what survived.
 
 ---
 
@@ -402,32 +409,62 @@ caught one silently corrupted statistic.
 
 ## Roadmap
 
-In priority order, with the reasoning rather than just the list.
+The actual order things got worked, not a wishlist. Each item below exists because
+something went wrong first.
 
-**1. Factor attribution.** The two surviving anomalies have not been regressed on size,
+**Shipped: run provenance, after a headline figure could not be reproduced.** An earlier
+result (935 trades, +1.2% alpha) failed to rerun. Eighteen parameter combinations were
+swept and the git history showed the code was byte-identical, so the original run had
+simply never been captured. Every result-producing run now stamps git SHA plus dirty-tree
+flag, a database fingerprint, library versions and full config, with a test asserting no
+opt-out flag exists.
+
+**Shipped: the 2021-2024 data gap closed.** The series is now continuous 2010 to 2026,
+7,061,494 rows, zero missing trading days. The July-2024 format seam between the two
+ingest paths was validated before use (100% symbol carry-over, ordinary returns across
+the join, no volatility jump), because without that check the decay finding could have
+been a schema artifact.
+
+**Shipped: the decay question resolved, pre-registered first.** Four hypotheses, decision
+rules and a stopping rule were written down before any 2021-2024 number existed. Verdict
+was H1, monotonic decay: Spearman r = −0.653, p = 0.0013, slope stable at ~0.12pp/year
+across every specification, all leave-one-out slopes negative, both COVID treatments
+agreeing. The competing breadth hypothesis was falsified against its pre-registered
+interval and has since collapsed in-sample too (r = −0.635 → −0.029).
+
+**Shipped: the anomaly replication.** 11 documented effects, one uniform methodology,
+290,651 symbol-months. Two survive Benjamini-Hochberg plus a bootstrap max-|t| null. A
+conditional double sort inside liquidity terciles confirms they are not liquidity in
+disguise.
+
+**Shipped: the gate red-teamed.** 58 adversarial tests written on the assumption the model
+is hostile. Four real bypasses found and fixed, plus a fifth gap in review where per-order
+caps failed to bound daily exposure.
+
+**Next: factor attribution.** The two surviving anomalies have not been regressed on size,
 value and volatility factors. A "spiked on volume" screen loads on volatility and
 illiquidity by construction, so some of that 15% could be compensation for known risk
 rather than a new effect. This is the single control standing between "candidate finding"
 and "result", and it is the first thing anyone competent will ask about. Indian factor
 data is published and usable.
 
-**2. Capacity.** Nobody asks how much money a strategy holds, and it is the question that
+**Next: capacity.** Nobody asks how much money a strategy holds, and it is the question that
 separates thinking about trading from thinking about backtesting. Model market impact
 against each stock's average daily volume and find the point where the edge goes to zero.
 Being able to say "this decays to nothing above X crore" is worth more than another
 decimal place on the alpha.
 
-**3. Point-in-time F&O eligibility.** The edge is short-side, which needs futures, which
+**Then: point-in-time F&O eligibility.** The edge is short-side, which needs futures, which
 restricts the universe to roughly 180 names. Rerunning restricted to that set answers
 whether the *tradeable* subset keeps the edge. The trap: the eligible list changed over
 the years, so using today's list on 2010 data reintroduces exactly the lookahead this
 project spent so long removing. Historical eligibility lists are the hard part.
 
-**4. Close the last data seam.** The series is continuous 2010 to 2026 in the merged
+**Then: re-validate the data seam as the range extends.** The series is continuous 2010 to 2026 in the merged
 database, but it is assembled from two ingest formats meeting in July 2024. That boundary
 was validated and is clean, and it should be re-validated whenever the range extends.
 
-**5. Cross-repo bypass survey.** The four gate bypasses are a taxonomy, and the taxonomy is
+**Then: a cross-repo bypass survey.** The four gate bypasses are a taxonomy, and the taxonomy is
 only interesting if it generalises. Checking the same six classes against other
 open-source LLM systems with live execution paths would turn one anecdote into a
 prevalence claim. It needs responsible disclosure to maintainers first, since those are

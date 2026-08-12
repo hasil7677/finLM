@@ -1,4 +1,35 @@
+<div align="center">
+
 # finLM
+
+**An AI that researches the Indian stock market, and a risk gate it cannot argue with.**
+Eleven published anomalies tested under one methodology. Two survived. Zero orders ever
+placed, because the file that would authorise one was deliberately never written.
+
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue)
+[![Protocol: MCP](https://img.shields.io/badge/protocol-MCP-6b5ca5)](#exposing-the-tools-to-an-mcp-client)
+![Tests: 119 passing](https://img.shields.io/badge/tests-119%20passing-3D6B4B)
+![Orders placed: 0](https://img.shields.io/badge/orders%20placed-0-A8372A)
+[![GitHub stars](https://img.shields.io/github/stars/hasil7677/finLLM?style=social)](https://github.com/hasil7677/finLLM/stargazers)
+
+</div>
+
+<p align="center">
+  <img src="site/social-preview.png" width="780"
+       alt="Net benchmark-adjusted alpha per trade by year, 2010 to 2025: positive every year and decaying.">
+</p>
+
+---
+
+**[Skip to: What the data says](#what-the-data-says) &middot;
+[Why trust it](#why-these-numbers-are-trustworthy) &middot;
+[The risk gate](#the-governance-layer) &middot;
+[Setup](#setup) &middot;
+[Status](#status) &middot;
+[Roadmap](#roadmap)**
+
+---
 
 It is easy to build an AI that suggests stock trades. Thousands of people have.
 
@@ -16,6 +47,14 @@ that works. That is written up as the main result, because it is what the data s
 **The governance half** is a risk gate that decides whether an order is allowed. It was
 attacked on the assumption that the AI is adversarial, it broke four different ways, and
 all four are fixed with a test suite that keeps them shut.
+
+| | |
+|---|---|
+| **Headline finding** | Fade alpha positive in **all 16 years** (2010-2025), decaying ~0.12pp/year. Spearman r = −0.653, p = 0.0013. [Details ↓](#what-the-data-says) |
+| **Anomaly replication** | 11 published effects tested, **2 survive** Benjamini-Hochberg plus a bootstrap max-\|t\| null (p = 0.012). [Table ↓](#what-the-data-says) |
+| **Setup** | `pip install -e ".[dev]"` then `llmfin-ingest`. No account, no API key, free public NSE data. |
+| **Talks to** | Claude Code or any MCP client, over stdio or streamable HTTP. 15 tools. |
+| **Orders ever placed** | **Zero.** The gate refused every time, by design. [Disclosure ↓](#read-this-first---what-has-and-has-not-been-run) |
 
 ```
 llmfin-replicate --db ~/.llmfin/market_full.db      # test 11 published anomalies
@@ -239,7 +278,7 @@ python -m venv .venv
 pip install -e ".[dev]"
 cp .env.example .env              # optional: TAVILY_API_KEY for catalyst research
 llmfin-ingest                     # build the market DB (~5 min, no accounts needed)
-pytest -q                         # 120 tests
+pytest -q                         # 119 tests
 ```
 
 **Runs with zero credentials** on free public NSE data. API keys only unlock the live
@@ -325,7 +364,21 @@ answer once invented a "positive earnings report" that didn't exist.
 
 ---
 
-## Known limits - read before trusting anything
+## Status
+
+Built solo, tested hard, never run with real money. The honest split:
+
+**Solid and verified (119 tests, all passing with zero credentials and no paid data):**
+point-in-time backtesting with next-day-open fills and a structurally filtered candidate
+panel &middot; a survivorship-free universe built from per-day exchange archives and checked
+against named delisted companies &middot; benchmark-adjusted returns with costs modelled in
+the simulator rather than discounted afterwards &middot; cross-sectional portfolio sorts with
+Newey-West standard errors, Benjamini-Hochberg FDR and a bootstrap max-|t| null &middot;
+a risk gate that fails closed with no bypass parameter, red-teamed across 58 adversarial
+tests &middot; run provenance stamped on every result with no opt-out, which has already
+caught one silently corrupted statistic.
+
+**Known gaps, not hidden:**
 
 - **The measured edge is ~97% short-side.** An Indian retail *cash* account cannot hold
   a multi-day short. Trading this requires futures, which restricts the universe to
@@ -347,7 +400,7 @@ answer once invented a "positive earnings report" that didn't exist.
 
 ---
 
-## What I would build next
+## Roadmap
 
 In priority order, with the reasoning rather than just the list.
 
@@ -407,7 +460,7 @@ src/llmfin/
   regime_analysis.py    Per-year alpha vs volatility/breadth
   provenance.py         Run artifacts - git SHA, data fingerprint, config
   diagnostics.py        Corporate-action audit trail
-tests/                  120 tests
+tests/                  119 tests
 artifacts/              Stamped run outputs + pre-registrations
 ```
 

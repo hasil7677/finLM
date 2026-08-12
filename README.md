@@ -2,9 +2,10 @@
 
 # finLM
 
-**An AI that researches the stock market and cannot spend your money.**
-It also cannot make its own results look better than they are. Both limits were attacked
-on purpose until they broke.
+**A governance layer for AI agents.**
+It decides what the agent is allowed to do and what it is allowed to claim, and the agent
+can't argue with either. Wired to a real stockbroker, because money is the hardest thing to
+hand an AI.
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue)
@@ -38,36 +39,41 @@ Five things this project asserted and had to withdraw, the mechanism that caught
 
 ---
 
-It is easy to build an AI that suggests stock trades. Thousands of people have.
+Give an AI a tool that spends money and you have a problem no prompt can fix. It will do
+what you asked in a way you did not mean, or it will tell you it worked when it did not.
+Two failures, and neither one is the model being stupid.
 
-The hard part starts the moment you actually plug one into a brokerage account. Two things
-go wrong, and neither of them is the model being stupid.
+finLM sits in between and answers both, and neither answer is something the model can
+overrule.
 
-**It does something it shouldn't.** Most projects "solve" this by telling the model to ask
-permission first. That is not a control, it is a request. Here, the file that authorises an
-order is one a human writes and nothing in the code can create, there is a kill switch that
-is just a file on disk, and there is no override the model can set on itself. Then I spent a
-while trying to break my own gate, on the assumption the AI is actively trying to get around
-it. It broke four times. All four are fixed and there is a test suite that keeps them shut.
+**What it's allowed to do.** Most projects handle this by telling the model to ask
+permission first. That is not a control, it is a request. Here the file that authorises an
+order is one a human writes, and nothing anywhere in the code can create it. There is a kill
+switch that is just a file on disk. There is no override parameter the model can set on
+itself. Then I spent a while attacking my own gate, assuming the AI is actively trying to
+get around it. **It broke four times.** All four are fixed and there is a suite that keeps
+them shut.
 
-**It tells you something that isn't true.** An AI that can't place a bad order can still
-hand you a bad number, and a backtest is the easiest thing in the world to accidentally rig
-in your own favour. So a result doesn't count here until it clears a fixed bar: tested on
-data as it looked at the time including companies that later went bust, with trading costs
-subtracted, corrected for the fact that testing eleven ideas gives you one that looks good
-by luck, and stamped with the exact code and data that produced it. Eleven strategies went
-in. Two came out.
+**What it's allowed to claim.** An AI that can't take a bad action can still hand you a bad
+number, and a backtest is the easiest thing in the world to accidentally rig in your own
+favour. So a result does not count here until it clears a fixed bar: tested on data as it
+looked at the time, including companies that later went bust; trading costs subtracted;
+corrected for the fact that trying eleven ideas hands you one that looks good by luck; and
+stamped with the exact code and data that produced it. **Eleven strategies went in. Two came
+out.**
 
-That second half is why there are 16 years of Indian market data in here. Markets tell you
-whether you were right, on a schedule and without arguing. Very few domains do, which makes
-this a good place to test whether controls like these actually hold.
+**The trading part is small on purpose.** There is a real order path, and given a mandate
+file and a broker session it will place a real trade. That exists so the controls have
+something real to hold back, because a permission system you never point at anything is just
+a diagram. Markets are the hard case: irreversible, they cost money, and they tell you within
+days whether you were wrong. Most of the code here is the part that says no.
 
 | | |
 |---|---|
-| **What it can't do** | Place an order without a file a human wrote. Fails closed, kill switch, no override. [Detail ↓](#the-governance-layer) |
-| **What it can't claim** | A result, until it survives real costs, point-in-time data and multiple-testing correction. [Detail ↓](#why-these-numbers-are-trustworthy) |
+| **Decides what it can do** | No order without a file a human wrote. Fails closed, kill switch, no override. [Detail ↓](#the-governance-layer) |
+| **Decides what it can claim** | No result until it survives real costs, point-in-time data and multiple-testing correction. [Detail ↓](#why-these-numbers-are-trustworthy) |
 | **I attacked it myself** | 58 tests trying to sneak a bad order past the gate. **4 got through.** All four fixed. |
-| **What survived** | 11 strategies tested, **2 still standing** after correction (p = 0.012). [Table ↓](#what-the-data-says) |
+| **The thing being governed** | A live Zerodha order path, plus 16 years of NSE data to test claims against. |
 | **Talks to** | Claude Code or any MCP client, over stdio or streamable HTTP. 15 tools. |
 | **Live orders placed** | **Zero.** The gate refused every time, by design. [Disclosure ↓](#read-this-first---what-has-and-has-not-been-run) |
 

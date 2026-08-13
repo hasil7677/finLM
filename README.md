@@ -7,6 +7,14 @@ It decides what the agent is allowed to do and what it is allowed to claim, and 
 can't argue with either. Wired to a real broker order path, because money is the hardest
 thing to hand an AI.
 
+<img src="docs/gate-demo.svg" width="820"
+     alt="Terminal recording: an AI agent mounts four bypasses against the risk gate - price spoofing on a market order, a negative quantity, a zero-width space hidden in a blocklisted symbol, and a NaN price - and is refused every time. A request inside the mandate is then allowed through. With the mandate file deleted, the same legal request is refused again.">
+
+**Four real bypasses, attempted and refused, then one legitimate order allowed.**
+Every verdict on screen is the return value of the real `place_order` MCP tool calling the
+real gate - nothing is staged.
+72 seconds, no credentials, no network: `python demo/gate_demo.py`
+
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue)
 [![Protocol: MCP](https://img.shields.io/badge/protocol-MCP-6b5ca5)](#exposing-the-tools-to-an-mcp-client)
@@ -278,6 +286,10 @@ Four real bypasses were found and fixed:
 Plus a fifth found in review: per-order caps don't bound daily exposure, so
 `max_daily_value_inr` now sums the order ledger.
 
+The recording at the top of this README is those four attacks mounted against the live
+gate - `demo/gate_demo.py`, which exits non-zero if the broker ledger ever comes back
+with anything other than the single legitimate order.
+
 All four are one bug wearing four hats - **the gate trusted caller-supplied values as
 ground truth.** That is the classic *confused deputy* problem: a program holding
 authority the caller lacks, tricked into exercising it because it believed the caller's
@@ -510,6 +522,7 @@ src/llmfin/
   provenance.py         Run artifacts - git SHA, data fingerprint, config
   diagnostics.py        Corporate-action audit trail
 tests/                  119 tests
+demo/                   The 72-second gate demo: runner, asciicast, SVG renderer
 artifacts/              Stamped run outputs + pre-registrations
 ```
 

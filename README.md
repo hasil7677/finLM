@@ -4,8 +4,9 @@
 
 **A governance layer for AI agents.**
 It decides what the agent is allowed to do and what it is allowed to claim, and the agent
-can't argue with either. Wired to a real broker order path, because money is the hardest
-thing to hand an AI.
+can't argue with either. Includes a real Zerodha Kite order path, red-teamed against the
+risk gate below - but never run against a funded account. Money is the hardest thing to
+hand an AI.
 
 <img src="docs/gate-demo.svg" width="820"
      alt="Terminal recording: an AI agent mounts four bypasses against the risk gate - price spoofing on a market order, a negative quantity, a zero-width space hidden in a blocklisted symbol, and a NaN price - and is refused every time. A request inside the mandate is then allowed through. With the mandate file deleted, the same legal request is refused again.">
@@ -19,7 +20,7 @@ real gate - nothing is staged.
 ![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue)
 [![Protocol: MCP](https://img.shields.io/badge/protocol-MCP-6b5ca5)](#exposing-the-tools-to-an-mcp-client)
 ![Tests: 119 passing](https://img.shields.io/badge/tests-119%20passing-3D6B4B)
-[![Case study](https://img.shields.io/badge/read-the%20case%20study-A8372A)](https://finlm-jade.vercel.app/)
+[![Case study](https://img.shields.io/badge/read-the%20case%20study-A8372A)](https://hasil7677.github.io/finLM/)
 
 </div>
 
@@ -30,7 +31,7 @@ real gate - nothing is staged.
 
 ---
 
-### [Read the case study &rarr;](https://finlm-jade.vercel.app/)
+### [Read the case study &rarr;](https://hasil7677.github.io/finLM/)
 
 Five things this project asserted and had to withdraw, the mechanism that caught each one, and what survived.
 

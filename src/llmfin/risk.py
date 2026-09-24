@@ -154,6 +154,14 @@ def record_order(symbol: str, transaction_type: str, quantity: int, est_value: f
     conn.close()
 
 
+# Sentinel distinguishing "caller did not inject this parameter" from
+# "caller explicitly injected None/0" (a tenant with no mandate row at all
+# injects mandate=None on purpose, and that must still mean "blocked", not
+# "fall back to the global file"). A plain default of None cannot make that
+# distinction, since None is itself a meaningful injected value.
+_UNSET: Any = object()
+
+
 def check_order(
     symbol: str,
     transaction_type: str,
@@ -163,6 +171,11 @@ def check_order(
     est_price: Optional[float],
     order_type: str = "MARKET",
     est_price_source: str = "unknown",
+    *,
+    injected_mandate: Any = _UNSET,
+    kill_switch_reason: Any = _UNSET,
+    orders_today: Any = _UNSET,
+    value_today: Any = _UNSET,
 ) -> RiskVerdict:
     """Validate an order against the user's mandate. Fails closed.
 
@@ -171,23 +184,42 @@ def check_order(
     "unavailable". The gate trusts a caller-supplied price only where the
     order type makes it a real ceiling on the fill; see
     PRICE_BINDING_ORDER_TYPES.
+
+    The four keyword-only `*_UNSET`-defaulted parameters let a caller inject
+    the mandate, kill-switch state, and today's order-count/value directly
+    instead of this function reaching into the global file/SQLite state
+    itself - added for FinLM 2.0's multi-tenant platform, where those facts
+    live in a per-tenant Postgres row rather than a single global file. Every
+    existing caller (finLM's own CLI/MCP server) omits all four and gets
+    byte-for-byte the original behaviour: each one, left at `_UNSET`, falls
+    back to the same global lookup it always called. None of the four is
+    named `mandate` - deliberately: `test_check_order_exposes_no_bypass_
+    parameter` (tests/test_risk_gate_adversarial.py) asserts `check_order`
+    exposes no parameter an LLM-facing caller could self-authorize through,
+    and `mandate` is one of the names that guard checks for. `injected_mandate`
+    is for trusted server-side platform code, not a model-settable override -
+    it is keyword-only for exactly that reason, and no code path threads an
+    LLM's own output into it.
     """
     reasons: list[str] = []
 
-    ks = kill_switch_active()
+    ks = kill_switch_active() if kill_switch_reason is _UNSET else kill_switch_reason
     if ks:
         return RiskVerdict(False, [f"KILL SWITCH is active at {ks} - delete the file to re-enable trading."])
 
-    try:
-        mandate = load_mandate()
-    except (json.JSONDecodeError, OSError, UnicodeDecodeError) as exc:
-        return RiskVerdict(
-            False,
-            [
-                f"Risk mandate at {RISK_FILE} exists but could not be read ({exc}). "
-                "Orders are blocked until it is valid JSON."
-            ],
-        )
+    if injected_mandate is _UNSET:
+        try:
+            mandate = load_mandate()
+        except (json.JSONDecodeError, OSError, UnicodeDecodeError) as exc:
+            return RiskVerdict(
+                False,
+                [
+                    f"Risk mandate at {RISK_FILE} exists but could not be read ({exc}). "
+                    "Orders are blocked until it is valid JSON."
+                ],
+            )
+    else:
+        mandate = injected_mandate
 
     if mandate is None:
         return RiskVerdict(
@@ -280,7 +312,7 @@ def check_order(
         )
 
     if max_daily_value is not None and order_value is not None:
-        committed = order_value_today()
+        committed = order_value_today() if value_today is _UNSET else value_today
         if committed + order_value > max_daily_value:
             reasons.append(
                 f"Order value ₹{order_value:,.0f} on top of ₹{committed:,.0f} already committed "
@@ -288,7 +320,8 @@ def check_order(
             )
 
     max_daily = mandate.get("max_orders_per_day")
-    if max_daily is not None and orders_placed_today() >= max_daily:
+    oc = orders_placed_today() if orders_today is _UNSET else orders_today
+    if max_daily is not None and oc >= max_daily:
         reasons.append(f"Daily order cap reached ({max_daily} orders today).")
 
     return RiskVerdict(len(reasons) == 0, reasons or ["All mandate checks passed."])
